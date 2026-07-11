@@ -3,6 +3,7 @@ import ProductConfigurator from "@/components/product/ProductConfigurator";
 import TechSpecTable from "@/components/product/TechSpecTable";
 import MythologySection from "@/components/product/MythologySection";
 import WhatsAppButton from "@/components/product/WhatsAppButton";
+import DecorativeGlow from "@/components/DecorativeGlow";
 
 const FEATURES = [
   "Tam spektrum, 6.500K–18.000K ayarlanabilir renk sıcaklığı",
@@ -24,7 +25,9 @@ const SPEC_ROWS = [
 
 export default function ApolloPage() {
   return (
-    <div className="bg-apollo-bg">
+    <div className="relative overflow-hidden bg-abyss bg-abyss-gradient">
+      <DecorativeGlow />
+      <div className="relative z-10">
       {/* Hero */}
       <section className="mx-auto grid max-w-6xl gap-10 px-6 py-20 md:grid-cols-2 md:items-center md:py-28">
         <div>
@@ -102,6 +105,7 @@ export default function ApolloPage() {
           ]}
         />
       </section>
+      </div>
     </div>
   );
 }
