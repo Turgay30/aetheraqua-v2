@@ -28,7 +28,7 @@ export default function Home() {
             Profesyonel Akvaryum Aydınlatması
           </p>
           <h1 className="font-display text-5xl uppercase leading-[1.05] text-ink sm:text-6xl md:text-7xl">
-            Işık, tanrıların
+            Tanrıların
             <br />
             <span className="text-gold">elinden çıkmış gibi</span>
           </h1>
@@ -64,7 +64,7 @@ export default function Home() {
             İki Karakter
           </p>
           <h2 className="mt-3 font-display text-4xl text-ink md:text-5xl">
-            Gece ve Gündüzün Işığı
+            Işığın İki Hali
           </h2>
         </div>
 
