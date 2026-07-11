@@ -10,6 +10,7 @@ import {
   formatTL,
 } from "@/lib/pricing";
 import { useCart } from "@/components/cart/CartProvider";
+import { trackAddToCart } from "@/lib/analytics";
 
 type Theme = "apollo" | "helios";
 
@@ -84,6 +85,7 @@ export default function ProductConfigurator({
     });
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 1800);
+    trackAddToCart({ id: theme, name: productName, price: salePrice }, 1);
   }
 
   return (

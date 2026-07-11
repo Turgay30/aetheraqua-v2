@@ -3,6 +3,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { CartProvider } from "@/components/cart/CartProvider";
+import AnalyticsScripts from "@/components/analytics/AnalyticsScripts";
 
 const siteDescription =
   "Apollo ve Helios: tam spektrum WRGB akvaryum aydınlatmaları. Mitolojiden ilham alan, profesyonel su altı ışığı.";
@@ -35,6 +36,7 @@ export default function RootLayout({
   return (
     <html lang="tr">
       <body className="min-h-screen bg-abyss font-body text-ink antialiased">
+        <AnalyticsScripts />
         <CartProvider>
           <Navbar />
           <main className="pt-[73px]">{children}</main>

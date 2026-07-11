@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import ProductGallery from "@/components/product/ProductGallery";
 import ProductConfigurator from "@/components/product/ProductConfigurator";
 import TechSpecTable from "@/components/product/TechSpecTable";
 import MythologySection from "@/components/product/MythologySection";
 import WhatsAppButton from "@/components/product/WhatsAppButton";
 import DecorativeGlow from "@/components/DecorativeGlow";
 import GhostBackground from "@/components/GhostBackground";
+import ViewItemTracker from "@/components/analytics/ViewItemTracker";
 
 export const metadata: Metadata = {
   title: "Helios — Ekonomik WRGB Akvaryum Aydınlatması | AetherAqua",
@@ -38,6 +39,7 @@ export default function HeliosPage() {
   return (
     <div className="relative overflow-hidden bg-abyss bg-abyss-gradient">
       <GhostBackground opacity={0.08} />
+      <ViewItemTracker id="helios" name="Helios" price={4200} />
       <DecorativeGlow />
       <div className="relative z-10">
       {/* Hero */}
@@ -59,16 +61,11 @@ export default function HeliosPage() {
           </div>
         </div>
 
-        <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-helios-line">
-          <Image
-            src="/images/helios-hero.jpg"
-            alt="Helios WRGB akvaryum aydınlatması"
-            fill
-            className="object-cover"
-            priority
-            sizes="(min-width: 768px) 50vw, 100vw"
-          />
-        </div>
+        <ProductGallery
+          images={["/images/helios-hero.jpg"]}
+          alt="Helios WRGB akvaryum aydınlatması"
+          theme="helios"
+        />
       </section>
 
       {/* Öne çıkan özellikler */}

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/components/cart/CartProvider";
 import { formatTL } from "@/lib/pricing";
+import { trackPurchase } from "@/lib/analytics";
 
 type Step = "form" | "summary" | "confirmed";
 
@@ -14,11 +15,16 @@ type OrderForm = {
   address: string;
 };
 
+// Yasal metinler güncellendiğinde bu sürüm numarasını artırın —
+// ileride veritabanı bağlandığında, hangi sürümün onaylandığı kayıt altına alınabilir.
+const LEGAL_TEXT_VERSION = "2026-07-v1";
+
 export default function OdemeContent() {
   const { lines, totalPrice, clear, isLoaded } = useCart();
   const [step, setStep] = useState<Step>("form");
   const [form, setForm] = useState<OrderForm>({ name: "", phone: "", email: "", address: "" });
   const [orderNo, setOrderNo] = useState("");
+  const [consentAccepted, setConsentAccepted] = useState(false);
 
   if (!isLoaded) return null;
 
@@ -48,6 +54,15 @@ export default function OdemeContent() {
     // NOT: Gerçek ödeme tahsilatı (iyzico/PayTR) ve sipariş kaydı
     // (Supabase) burada devreye girecek. Şimdilik sipariş simüle ediliyor.
     const generatedOrderNo = `AA-${Date.now().toString().slice(-8)}`;
+
+    // Veritabanı bağlandığında siparişle birlikte kaydedilecek onay bilgisi:
+    const consentRecord = {
+      legalTextVersion: LEGAL_TEXT_VERSION,
+      acceptedAt: new Date().toISOString(),
+    };
+    void consentRecord; // şimdilik sadece hazırlanıyor, henüz kaydedilmiyor
+
+    trackPurchase(generatedOrderNo, totalPrice, lines.length);
     setOrderNo(generatedOrderNo);
     clear();
     setStep("confirmed");
@@ -125,7 +140,26 @@ export default function OdemeContent() {
             </div>
           </div>
 
-          <div className="mt-6 flex gap-3">
+          <label className="mt-6 flex items-start gap-3 rounded-xl border border-abyss-border bg-abyss-surface px-4 py-3.5">
+            <input
+              type="checkbox"
+              checked={consentAccepted}
+              onChange={(e) => setConsentAccepted(e.target.checked)}
+              className="mt-0.5 h-4 w-4 flex-shrink-0 accent-gold"
+            />
+            <span className="font-body text-xs leading-relaxed text-ink-muted">
+              <Link href="/mesafeli-satis-sozlesmesi" target="_blank" className="text-aqua hover:underline">
+                Mesafeli Satış Sözleşmesi&apos;ni
+              </Link>{" "}
+              ve{" "}
+              <Link href="/gizlilik-politikasi" target="_blank" className="text-aqua hover:underline">
+                Gizlilik Politikası&apos;nı
+              </Link>{" "}
+              okudum, kabul ediyorum.
+            </span>
+          </label>
+
+          <div className="mt-4 flex gap-3">
             <button
               onClick={() => setStep("form")}
               className="flex-1 rounded-full border border-abyss-border py-3 font-body text-sm text-ink hover:border-aqua hover:text-aqua"
@@ -134,7 +168,8 @@ export default function OdemeContent() {
             </button>
             <button
               onClick={handleConfirm}
-              className="flex-1 rounded-full bg-gold py-3 font-body text-sm font-semibold text-abyss transition-transform hover:scale-[1.01]"
+              disabled={!consentAccepted}
+              className="flex-1 rounded-full bg-gold py-3 font-body text-sm font-semibold text-abyss transition-transform hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
             >
               Siparişi Onayla
             </button>
