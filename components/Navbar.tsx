@@ -12,6 +12,7 @@ const links = [
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const { totalItems } = useCart();
 
   useEffect(() => {
@@ -21,16 +22,25 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Route değiştiğinde ya da geniş ekrana geçildiğinde menüyü kapat
+  useEffect(() => {
+    if (!menuOpen) return;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [menuOpen]);
+
   return (
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? "bg-abyss/80 backdrop-blur-md border-b border-abyss-border"
-          : "bg-transparent border-b border-transparent"
+        scrolled || menuOpen
+          ? "border-b border-abyss-border bg-abyss/80 backdrop-blur-md"
+          : "border-b border-transparent bg-transparent"
       }`}
     >
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Link href="/" className="group flex items-center gap-2.5">
+        <Link href="/" className="group flex items-center gap-2.5" onClick={() => setMenuOpen(false)}>
           <TridentMark />
           <span className="font-display text-xl tracking-[0.18em] text-ink">
             AETHER<span className="text-aqua">AQUA</span>
@@ -50,19 +60,52 @@ export default function Navbar() {
           ))}
         </ul>
 
-        <Link
-          href="/sepet"
-          aria-label="Sepet"
-          className="relative flex h-9 w-9 items-center justify-center rounded-full border border-abyss-border text-ink-muted transition-colors hover:border-aqua hover:text-aqua"
-        >
-          <CartIcon />
-          {totalItems > 0 && (
-            <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-gold font-mono text-[9px] font-bold text-abyss">
-              {totalItems > 9 ? "9+" : totalItems}
-            </span>
-          )}
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/sepet"
+            aria-label="Sepet"
+            onClick={() => setMenuOpen(false)}
+            className="relative flex h-9 w-9 items-center justify-center rounded-full border border-abyss-border text-ink-muted transition-colors hover:border-aqua hover:text-aqua"
+          >
+            <CartIcon />
+            {totalItems > 0 && (
+              <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-gold font-mono text-[9px] font-bold text-abyss">
+                {totalItems > 9 ? "9+" : totalItems}
+              </span>
+            )}
+          </Link>
+
+          <button
+            onClick={() => setMenuOpen((v) => !v)}
+            aria-label={menuOpen ? "Menüyü kapat" : "Menüyü aç"}
+            aria-expanded={menuOpen}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-abyss-border text-ink-muted transition-colors hover:border-aqua hover:text-aqua md:hidden"
+          >
+            {menuOpen ? <CloseIcon /> : <MenuIcon />}
+          </button>
+        </div>
       </nav>
+
+      {/* Mobil menü paneli */}
+      <div
+        className={`overflow-hidden transition-[max-height] duration-300 ease-in-out md:hidden ${
+          menuOpen ? "max-h-64" : "max-h-0"
+        }`}
+      >
+        <ul className="flex flex-col gap-1 border-t border-abyss-border px-6 py-4">
+          {links.map((link) => (
+            <li key={link.href}>
+              <Link
+                href={link.href}
+                onClick={() => setMenuOpen(false)}
+                className="block rounded-lg px-3 py-3 font-body text-base text-ink-muted transition-colors hover:bg-abyss-surface hover:text-ink"
+              >
+                {link.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
     </header>
   );
 }
@@ -105,6 +148,22 @@ function CartIcon() {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+    </svg>
+  );
+}
+
+function MenuIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
     </svg>
   );
 }
