@@ -84,45 +84,18 @@ export default function AquariumAssistant() {
               status={getStatus(fish.id)}
               count={selection[fish.id] ?? 0}
               onToggle={() => toggleFish(fish.id)}
+              onIncrement={() => updateCount(fish.id, (selection[fish.id] ?? 0) + 1)}
+              onDecrement={() => {
+                const next = (selection[fish.id] ?? 0) - 1;
+                if (next <= 0) {
+                  toggleFish(fish.id);
+                } else {
+                  updateCount(fish.id, next);
+                }
+              }}
             />
           ))}
         </div>
-
-        {/* Seçili balıklar için adet ayarlama */}
-        {selectedIds.length > 0 && (
-          <div className="mt-6 flex flex-wrap gap-3">
-            {selectedIds.map((id) => {
-              const fish = FISH_SPECIES.find((f) => f.id === id)!;
-              return (
-                <div
-                  key={id}
-                  className="flex items-center gap-2 rounded-full border border-abyss-border bg-abyss-surface px-3 py-1.5"
-                >
-                  <span className="font-body text-xs text-ink">{fish.name}</span>
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => updateCount(id, selection[id] - 1)}
-                      className="flex h-5 w-5 items-center justify-center rounded-full border border-abyss-border text-ink-muted hover:text-aqua"
-                      aria-label={`${fish.name} adedini azalt`}
-                    >
-                      −
-                    </button>
-                    <span className="w-5 text-center font-mono text-xs text-aqua">
-                      {selection[id]}
-                    </span>
-                    <button
-                      onClick={() => updateCount(id, selection[id] + 1)}
-                      className="flex h-5 w-5 items-center justify-center rounded-full border border-abyss-border text-ink-muted hover:text-aqua"
-                      aria-label={`${fish.name} adedini artır`}
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
       </div>
 
       {/* 3-4. Stoklama + Ekipman */}

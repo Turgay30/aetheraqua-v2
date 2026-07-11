@@ -2,7 +2,7 @@ type Theme = "apollo" | "helios";
 
 const themeStyles: Record<Theme, { text: string; muted: string; accent: string }> = {
   apollo: { text: "text-apollo-text", muted: "text-apollo-muted", accent: "text-apollo-gold" },
-  helios: { text: "text-helios-text", muted: "text-helios-muted", accent: "text-helios-bronze" },
+  helios: { text: "text-ink", muted: "text-ink-muted", accent: "text-helios-bronze" },
 };
 
 export default function MythologySection({

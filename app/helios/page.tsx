@@ -25,8 +25,8 @@ const SPEC_ROWS = [
 
 export default function HeliosPage() {
   return (
-    <div className="relative overflow-hidden bg-helios-bg">
-      <DecorativeGlow colorA="bg-helios-bronze/35" colorB="bg-aqua-dim/30" />
+    <div className="relative overflow-hidden bg-abyss bg-abyss-gradient">
+      <DecorativeGlow />
       <div className="relative z-10">
       {/* Hero */}
       <section className="mx-auto grid max-w-6xl gap-10 px-6 py-20 md:grid-cols-2 md:items-center md:py-28">
@@ -34,10 +34,10 @@ export default function HeliosPage() {
           <p className="font-mono text-xs uppercase tracking-[0.35em] text-helios-bronze">
             Gündüzün Taşıyıcısı
           </p>
-          <h1 className="mt-4 font-display text-6xl text-helios-text md:text-7xl">
+          <h1 className="mt-4 font-display text-6xl text-ink md:text-7xl">
             Helios
           </h1>
-          <p className="mt-5 max-w-md font-body text-[15px] leading-relaxed text-helios-muted">
+          <p className="mt-5 max-w-md font-body text-[15px] leading-relaxed text-ink-muted">
             Her akvaryum için doğru, dengeli ve güvenilir bir gündüz ışığı.
             Helios, gösterişten çok tutarlılığa odaklanır — kurar, ayarlar ve
             her gün aynı netlikte ışık alırsınız.
@@ -78,13 +78,13 @@ export default function HeliosPage() {
       <section className="mx-auto max-w-6xl px-6 pb-24">
         <div className="grid gap-8 md:grid-cols-2">
           <div>
-            <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.25em] text-helios-muted">
+            <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.25em] text-ink-faint">
               Teknik Özellikler
             </p>
             <TechSpecTable theme="helios" rows={SPEC_ROWS} />
           </div>
           <div>
-            <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.25em] text-helios-muted">
+            <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.25em] text-ink-faint">
               Boy & Kasa Rengi Seçin
             </p>
             <ProductConfigurator theme="helios" basePrice={4200} productName="Helios" />
@@ -93,7 +93,7 @@ export default function HeliosPage() {
       </section>
 
       {/* Mitolojik İlham */}
-      <section className="border-t border-helios-line px-6 py-24">
+      <section className="border-t border-helios-bronze/10 px-6 py-24">
         <MythologySection
           theme="helios"
           eyebrow="Mitolojik İlham"

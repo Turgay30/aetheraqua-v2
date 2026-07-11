@@ -22,6 +22,7 @@ const themeStyles: Record<
     chipIdle: string;
     button: string;
     border: string;
+    bg: string;
   }
 > = {
   apollo: {
@@ -32,6 +33,7 @@ const themeStyles: Record<
     chipIdle: "border-apollo-gold/20 text-apollo-muted hover:border-apollo-gold/50",
     button: "bg-apollo-gold text-apollo-bg hover:bg-apollo-gold/90",
     border: "border-apollo-gold/20",
+    bg: "",
   },
   helios: {
     text: "text-helios-text",
@@ -41,6 +43,7 @@ const themeStyles: Record<
     chipIdle: "border-helios-line text-helios-muted hover:border-helios-bronze/50",
     button: "bg-helios-bronze text-helios-surface hover:bg-helios-bronze/90",
     border: "border-helios-line",
+    bg: "bg-helios-surface",
   },
 };
 
@@ -63,7 +66,7 @@ export default function ProductConfigurator({
   const selectedColor = CASE_COLORS.find((c) => c.id === colorId)!;
 
   return (
-    <div className={`rounded-2xl border ${s.border} p-6 md:p-8`}>
+    <div className={`rounded-2xl border ${s.border} ${s.bg} p-6 md:p-8`}>
       {/* Boy seçici */}
       <div>
         <p className={`font-mono text-[11px] uppercase tracking-[0.25em] ${s.muted}`}>
