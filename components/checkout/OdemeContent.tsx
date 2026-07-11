@@ -8,11 +8,18 @@ import { trackPurchase } from "@/lib/analytics";
 
 type Step = "form" | "summary" | "confirmed";
 
+type InvoiceType = "bireysel" | "kurumsal";
+
 type OrderForm = {
   name: string;
   phone: string;
   email: string;
   address: string;
+  invoiceType: InvoiceType;
+  tckn: string;
+  companyName: string;
+  taxOffice: string;
+  taxNumber: string;
 };
 
 // Yasal metinler güncellendiğinde bu sürüm numarasını artırın —
@@ -20,9 +27,19 @@ type OrderForm = {
 const LEGAL_TEXT_VERSION = "2026-07-v1";
 
 export default function OdemeContent() {
-  const { lines, totalPrice, clear, isLoaded } = useCart();
+  const { lines, subtotal, totalPrice, coupon, couponDiscount, clear, isLoaded } = useCart();
   const [step, setStep] = useState<Step>("form");
-  const [form, setForm] = useState<OrderForm>({ name: "", phone: "", email: "", address: "" });
+  const [form, setForm] = useState<OrderForm>({
+    name: "",
+    phone: "",
+    email: "",
+    address: "",
+    invoiceType: "bireysel",
+    tckn: "",
+    companyName: "",
+    taxOffice: "",
+    taxNumber: "",
+  });
   const [orderNo, setOrderNo] = useState("");
   const [consentAccepted, setConsentAccepted] = useState(false);
 
@@ -101,6 +118,68 @@ export default function OdemeContent() {
             required
           />
 
+          <div>
+            <span className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.2em] text-ink-faint">
+              Fatura Türü
+            </span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, invoiceType: "bireysel" })}
+                className={`flex-1 rounded-lg border py-2.5 font-body text-sm transition-colors ${
+                  form.invoiceType === "bireysel"
+                    ? "border-gold bg-gold/10 text-gold"
+                    : "border-abyss-border text-ink-muted hover:border-ink-faint"
+                }`}
+              >
+                Bireysel
+              </button>
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, invoiceType: "kurumsal" })}
+                className={`flex-1 rounded-lg border py-2.5 font-body text-sm transition-colors ${
+                  form.invoiceType === "kurumsal"
+                    ? "border-gold bg-gold/10 text-gold"
+                    : "border-abyss-border text-ink-muted hover:border-ink-faint"
+                }`}
+              >
+                Kurumsal
+              </button>
+            </div>
+          </div>
+
+          {form.invoiceType === "bireysel" ? (
+            <Field
+              label="TCKN"
+              value={form.tckn}
+              onChange={(v) => setForm({ ...form, tckn: v })}
+              required
+            />
+          ) : (
+            <div className="space-y-5">
+              <Field
+                label="Şirket Unvanı"
+                value={form.companyName}
+                onChange={(v) => setForm({ ...form, companyName: v })}
+                required
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <Field
+                  label="Vergi Dairesi"
+                  value={form.taxOffice}
+                  onChange={(v) => setForm({ ...form, taxOffice: v })}
+                  required
+                />
+                <Field
+                  label="Vergi No"
+                  value={form.taxNumber}
+                  onChange={(v) => setForm({ ...form, taxNumber: v })}
+                  required
+                />
+              </div>
+            </div>
+          )}
+
           <button
             type="submit"
             className="w-full rounded-full bg-gold py-3.5 font-body text-sm font-semibold text-abyss transition-transform hover:scale-[1.01]"
@@ -120,6 +199,11 @@ export default function OdemeContent() {
               <p>{form.name}</p>
               <p className="text-ink-muted">{form.phone} · {form.email}</p>
               <p className="text-ink-muted">{form.address}</p>
+              <p className="text-ink-muted">
+                {form.invoiceType === "bireysel"
+                  ? `Bireysel Fatura — TCKN: ${form.tckn}`
+                  : `Kurumsal Fatura — ${form.companyName} · ${form.taxOffice} V.D. · ${form.taxNumber}`}
+              </p>
             </div>
           </div>
 
@@ -134,6 +218,18 @@ export default function OdemeContent() {
                 </span>
               </div>
             ))}
+            {coupon && (
+              <>
+                <div className="flex items-center justify-between px-6 py-3">
+                  <span className="font-body text-sm text-ink-muted">Ara toplam</span>
+                  <span className="font-body text-sm text-ink-muted">{formatTL(subtotal)}</span>
+                </div>
+                <div className="flex items-center justify-between px-6 py-3">
+                  <span className="font-body text-sm text-aqua">Kupon ({coupon.code})</span>
+                  <span className="font-body text-sm text-aqua">−{formatTL(couponDiscount)}</span>
+                </div>
+              </>
+            )}
             <div className="flex items-center justify-between px-6 py-4">
               <span className="font-body text-sm font-semibold text-ink">Toplam</span>
               <span className="font-display text-xl text-gold">{formatTL(totalPrice)}</span>

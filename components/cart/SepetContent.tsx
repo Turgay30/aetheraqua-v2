@@ -1,12 +1,26 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/components/cart/CartProvider";
 import { formatTL } from "@/lib/pricing";
 
 export default function SepetContent() {
-  const { lines, removeLine, setQuantity, totalPrice, isLoaded } = useCart();
+  const {
+    lines,
+    removeLine,
+    setQuantity,
+    subtotal,
+    totalPrice,
+    isLoaded,
+    coupon,
+    couponError,
+    couponDiscount,
+    applyCoupon,
+    removeCoupon,
+  } = useCart();
+  const [couponInput, setCouponInput] = useState("");
 
   if (!isLoaded) return null;
 
@@ -96,10 +110,56 @@ export default function SepetContent() {
         ))}
       </div>
 
-      <div className="mt-8 flex flex-col items-end gap-4">
-        <p className="font-body text-lg text-ink">
-          Toplam: <span className="font-display text-3xl text-gold">{formatTL(totalPrice)}</span>
-        </p>
+      <div className="mt-8 flex flex-col items-end gap-5">
+        <div className="w-full max-w-sm">
+          {coupon ? (
+            <div className="flex items-center justify-between rounded-xl border border-aqua/30 bg-aqua/[0.06] px-4 py-3">
+              <div>
+                <p className="font-mono text-xs text-aqua">{coupon.code}</p>
+                <p className="font-body text-xs text-ink-muted">{coupon.label} uygulandı</p>
+              </div>
+              <button
+                onClick={removeCoupon}
+                className="font-body text-xs text-ink-faint underline hover:text-red-400"
+              >
+                Kaldır
+              </button>
+            </div>
+          ) : (
+            <div>
+              <div className="flex gap-2">
+                <input
+                  value={couponInput}
+                  onChange={(e) => setCouponInput(e.target.value)}
+                  placeholder="Kupon kodu"
+                  className="w-full rounded-lg border border-abyss-border bg-abyss-surface px-4 py-2.5 font-body text-sm text-ink outline-none focus-visible:border-aqua"
+                />
+                <button
+                  onClick={() => applyCoupon(couponInput)}
+                  className="flex-shrink-0 rounded-lg border border-abyss-border px-4 py-2.5 font-body text-sm text-ink hover:border-aqua hover:text-aqua"
+                >
+                  Uygula
+                </button>
+              </div>
+              {couponError && (
+                <p className="mt-1.5 font-body text-xs text-red-400">{couponError}</p>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="text-right">
+          {coupon && (
+            <div className="mb-1.5 space-y-0.5 font-body text-sm text-ink-muted">
+              <p>Ara toplam: {formatTL(subtotal)}</p>
+              <p className="text-aqua">İndirim: −{formatTL(couponDiscount)}</p>
+            </div>
+          )}
+          <p className="font-body text-lg text-ink">
+            Toplam: <span className="font-display text-3xl text-gold">{formatTL(totalPrice)}</span>
+          </p>
+        </div>
+
         <Link
           href="/odeme"
           className="rounded-full bg-gold px-8 py-3 font-body text-sm font-semibold text-abyss transition-transform hover:scale-[1.03]"

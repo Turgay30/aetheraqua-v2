@@ -8,6 +8,7 @@ import {
   useState,
   ReactNode,
 } from "react";
+import { Coupon, findCoupon, calcCouponDiscount } from "@/lib/coupons";
 
 export type CartLine = {
   key: string; // `${productId}-${size}-${colorId}`
@@ -29,23 +30,34 @@ type CartContextValue = {
   setQuantity: (key: string, quantity: number) => void;
   clear: () => void;
   totalItems: number;
+  subtotal: number;
   totalPrice: number;
   isLoaded: boolean;
+  coupon: Coupon | null;
+  couponError: string | null;
+  couponDiscount: number;
+  applyCoupon: (code: string) => void;
+  removeCoupon: () => void;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
 
 const STORAGE_KEY = "aetheraqua_cart";
+const COUPON_STORAGE_KEY = "aetheraqua_coupon";
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([]);
+  const [coupon, setCoupon] = useState<Coupon | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // İlk yüklemede localStorage'dan sepeti oku
+  // İlk yüklemede localStorage'dan sepeti ve kuponu oku
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) setLines(JSON.parse(raw));
+      const rawCoupon = window.localStorage.getItem(COUPON_STORAGE_KEY);
+      if (rawCoupon) setCoupon(JSON.parse(rawCoupon));
     } catch {
       // bozuk veri varsa sessizce yok say
     } finally {
@@ -62,6 +74,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
       // depolama dolu/erişilemez olabilir — sessizce yok say
     }
   }, [lines, isLoaded]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    try {
+      if (coupon) {
+        window.localStorage.setItem(COUPON_STORAGE_KEY, JSON.stringify(coupon));
+      } else {
+        window.localStorage.removeItem(COUPON_STORAGE_KEY);
+      }
+    } catch {
+      // sessizce yok say
+    }
+  }, [coupon, isLoaded]);
 
   function addLine(line: Omit<CartLine, "quantity">, quantity = 1) {
     setLines((prev) => {
@@ -87,17 +112,55 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   function clear() {
     setLines([]);
+    setCoupon(null);
+    setCouponError(null);
+  }
+
+  function applyCoupon(code: string) {
+    const found = findCoupon(code);
+    if (!found) {
+      setCoupon(null);
+      setCouponError("Geçersiz kupon kodu.");
+      return;
+    }
+    setCoupon(found);
+    setCouponError(null);
+  }
+
+  function removeCoupon() {
+    setCoupon(null);
+    setCouponError(null);
   }
 
   const totalItems = useMemo(() => lines.reduce((sum, l) => sum + l.quantity, 0), [lines]);
-  const totalPrice = useMemo(
+  const subtotal = useMemo(
     () => lines.reduce((sum, l) => sum + l.unitPrice * l.quantity, 0),
     [lines]
   );
+  const couponDiscount = useMemo(
+    () => (coupon ? calcCouponDiscount(coupon, subtotal) : 0),
+    [coupon, subtotal]
+  );
+  const totalPrice = useMemo(() => subtotal - couponDiscount, [subtotal, couponDiscount]);
 
   return (
     <CartContext.Provider
-      value={{ lines, addLine, removeLine, setQuantity, clear, totalItems, totalPrice, isLoaded }}
+      value={{
+        lines,
+        addLine,
+        removeLine,
+        setQuantity,
+        clear,
+        totalItems,
+        subtotal,
+        totalPrice,
+        isLoaded,
+        coupon,
+        couponError,
+        couponDiscount,
+        applyCoupon,
+        removeCoupon,
+      }}
     >
       {children}
     </CartContext.Provider>
