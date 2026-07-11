@@ -3,6 +3,7 @@ import ProductConfigurator from "@/components/product/ProductConfigurator";
 import TechSpecTable from "@/components/product/TechSpecTable";
 import MythologySection from "@/components/product/MythologySection";
 import WhatsAppButton from "@/components/product/WhatsAppButton";
+import DecorativeGlow from "@/components/DecorativeGlow";
 
 const FEATURES = [
   "Sabit 8.000K çıkış — dengeli gündüz ışığı",
@@ -24,7 +25,9 @@ const SPEC_ROWS = [
 
 export default function HeliosPage() {
   return (
-    <div className="bg-helios-bg">
+    <div className="relative overflow-hidden bg-helios-bg">
+      <DecorativeGlow colorA="bg-helios-bronze/15" colorB="bg-helios-sage/25" />
+      <div className="relative z-10">
       {/* Hero */}
       <section className="mx-auto grid max-w-6xl gap-10 px-6 py-20 md:grid-cols-2 md:items-center md:py-28">
         <div>
@@ -101,6 +104,7 @@ export default function HeliosPage() {
           ]}
         />
       </section>
+      </div>
     </div>
   );
 }

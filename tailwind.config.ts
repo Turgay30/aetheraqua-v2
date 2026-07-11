@@ -42,12 +42,13 @@ const config: Config = {
         },
         // Helios alt-teması — "mermer / tapınak"
         helios: {
-          bg: "#F7F5F0",
-          surface: "#FFFFFF",
+          bg: "#E7E0CE",
+          surface: "#FBF9F4",
           bronze: "#A8763E",
-          line: "#E4DED2",
+          sage: "#8B9574",
+          line: "#DAD2BE",
           text: "#2B2620",
-          muted: "#8A8172",
+          muted: "#7C7361",
         },
       },
       fontFamily: {
