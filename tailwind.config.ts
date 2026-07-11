@@ -68,10 +68,21 @@ const config: Config = {
           "0%": { opacity: "0", transform: "translateY(12px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
+        glow: {
+          "0%, 100%": { opacity: "0.5", transform: "scale(1)" },
+          "50%": { opacity: "1", transform: "scale(1.08)" },
+        },
+        drift: {
+          "0%, 100%": { transform: "translate(0, 0)" },
+          "50%": { transform: "translate(3%, -4%)" },
+        },
       },
       animation: {
         ripple: "ripple 6s linear infinite",
         rise: "rise 0.6s ease-out forwards",
+        glow: "glow 7s ease-in-out infinite",
+        "glow-slow": "glow 10s ease-in-out infinite",
+        drift: "drift 12s ease-in-out infinite",
       },
     },
   },

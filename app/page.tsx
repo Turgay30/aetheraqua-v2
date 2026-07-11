@@ -87,8 +87,19 @@ export default function Home() {
 function DecorativeGlow() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-      <div className="absolute left-1/2 top-[-10%] h-[600px] w-[900px] -translate-x-1/2 rounded-full bg-aqua/10 blur-[120px]" />
-      <div className="absolute bottom-[-15%] right-[10%] h-[400px] w-[400px] rounded-full bg-gold/10 blur-[100px]" />
+      <div className="absolute left-1/2 top-[-10%] h-[600px] w-[900px] -translate-x-1/2 animate-drift rounded-full bg-aqua/10 blur-[120px]" />
+      <div
+        className="absolute left-1/2 top-[-10%] h-[600px] w-[900px] -translate-x-1/2 animate-glow-slow rounded-full bg-aqua/10 blur-[120px]"
+        style={{ animationDelay: "1.5s" }}
+      />
+      <div
+        className="absolute bottom-[-15%] right-[10%] h-[400px] w-[400px] animate-drift rounded-full bg-gold/10 blur-[100px]"
+        style={{ animationDelay: "3s", animationDirection: "reverse" }}
+      />
+      <div
+        className="absolute bottom-[-15%] right-[10%] h-[400px] w-[400px] animate-glow rounded-full bg-gold/10 blur-[100px]"
+        style={{ animationDelay: "0.8s" }}
+      />
     </div>
   );
 }
