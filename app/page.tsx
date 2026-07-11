@@ -4,6 +4,7 @@ import ProductCard from "@/components/ProductCard";
 import AssistantBanner from "@/components/AssistantBanner";
 import SpecStrip from "@/components/SpecStrip";
 import DecorativeGlow from "@/components/DecorativeGlow";
+import LightBeam from "@/components/LightBeam";
 
 export default function Home() {
   return (
@@ -20,15 +21,16 @@ export default function Home() {
           />
           <div className="absolute inset-0 bg-gradient-to-b from-abyss/40 via-transparent to-abyss" />
         </div>
+        <LightBeam />
         <DecorativeGlow />
         <section className="relative mx-auto flex min-h-[calc(100vh-73px)] max-w-6xl flex-col items-center justify-center px-6 py-24 text-center">
           <p className="mb-5 font-mono text-xs uppercase tracking-[0.35em] text-aqua">
             Profesyonel Akvaryum Aydınlatması
           </p>
-          <h1 className="font-display text-5xl leading-[1.05] text-ink sm:text-6xl md:text-7xl">
+          <h1 className="font-display text-5xl uppercase leading-[1.05] text-ink sm:text-6xl md:text-7xl">
             Işık, tanrıların
             <br />
-            <span className="text-gold">elinden çıkmış gibi.</span>
+            <span className="text-gold">elinden çıkmış gibi</span>
           </h1>
           <p className="mt-6 max-w-xl font-body text-base text-ink-muted md:text-lg">
             Apollo ve Helios — tam spektrum WRGB aydınlatma serisi.
