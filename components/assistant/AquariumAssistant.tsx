@@ -7,6 +7,7 @@ import TankSizeInput from "@/components/assistant/TankSizeInput";
 import FishCard, { CardStatus } from "@/components/assistant/FishCard";
 import StockingSummary from "@/components/assistant/StockingSummary";
 import EquipmentRecommendation from "@/components/assistant/EquipmentRecommendation";
+import StickySummaryBar from "@/components/assistant/StickySummaryBar";
 
 export default function AquariumAssistant() {
   const [liters, setLiters] = useState(60);
@@ -25,6 +26,10 @@ export default function AquariumAssistant() {
 
   const stocking = useMemo(() => assessStocking(totalAdultCm, liters), [totalAdultCm, liters]);
   const equipment = useMemo(() => recommendEquipment(liters, stocking.level), [liters, stocking.level]);
+  const totalFishCount = useMemo(
+    () => selectedIds.reduce((sum, id) => sum + selection[id], 0),
+    [selection, selectedIds]
+  );
 
   function getStatus(fishId: string): CardStatus {
     if (selectedIds.includes(fishId)) return "selected";
@@ -51,7 +56,7 @@ export default function AquariumAssistant() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-6 pb-24">
+    <div className={`mx-auto max-w-6xl px-6 ${selectedIds.length > 0 ? "pb-20" : "pb-24"}`}>
       {/* 1. Tank ölçüsü */}
       <div className="mb-12">
         <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.25em] text-ink-faint">
@@ -100,10 +105,19 @@ export default function AquariumAssistant() {
 
       {/* 3-4. Stoklama + Ekipman */}
       {selectedIds.length > 0 && (
-        <div className="grid gap-6 md:grid-cols-2">
+        <div id="stoklama-detay" className="grid scroll-mt-24 gap-6 pb-16 md:grid-cols-2">
           <StockingSummary result={stocking} />
           <EquipmentRecommendation equipment={equipment} />
         </div>
+      )}
+
+      {selectedIds.length > 0 && (
+        <StickySummaryBar
+          liters={liters}
+          fishCount={totalFishCount}
+          stocking={stocking}
+          equipment={equipment}
+        />
       )}
     </div>
   );
