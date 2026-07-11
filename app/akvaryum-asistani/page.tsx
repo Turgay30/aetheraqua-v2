@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import DecorativeGlow from "@/components/DecorativeGlow";
 import AquariumAssistant from "@/components/assistant/AquariumAssistant";
+
+export const metadata: Metadata = {
+  title: "Akvaryum Asistanı — Ücretsiz Balık Uyumluluk Aracı | AetherAqua",
+  description:
+    "Tank ölçünüzü girin, balıklarınızı seçin: uyumluluk, stoklama yoğunluğu ve önerilen filtre/ısıtıcı ekipmanını anında görün.",
+};
 
 export default function AkvaryumAsistaniPage() {
   return (

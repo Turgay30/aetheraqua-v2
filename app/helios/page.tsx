@@ -1,9 +1,16 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import ProductConfigurator from "@/components/product/ProductConfigurator";
 import TechSpecTable from "@/components/product/TechSpecTable";
 import MythologySection from "@/components/product/MythologySection";
 import WhatsAppButton from "@/components/product/WhatsAppButton";
 import DecorativeGlow from "@/components/DecorativeGlow";
+
+export const metadata: Metadata = {
+  title: "Helios — Ekonomik WRGB Akvaryum Aydınlatması | AetherAqua",
+  description:
+    "Helios: sabit 8.000K çıkış, manuel kademe kontrolü, zamanlayıcı, CRI >92, IP65 su geçirmezlik. 30–120cm boy seçenekleri, 4.200 TL'den başlıyor.",
+};
 
 const FEATURES = [
   "Sabit 8.000K çıkış — dengeli gündüz ışığı",

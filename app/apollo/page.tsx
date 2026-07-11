@@ -1,9 +1,16 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import ProductConfigurator from "@/components/product/ProductConfigurator";
 import TechSpecTable from "@/components/product/TechSpecTable";
 import MythologySection from "@/components/product/MythologySection";
 import WhatsAppButton from "@/components/product/WhatsAppButton";
 import DecorativeGlow from "@/components/DecorativeGlow";
+
+export const metadata: Metadata = {
+  title: "Apollo — Profesyonel WRGB Akvaryum Aydınlatması | AetherAqua",
+  description:
+    "Apollo: 6.500K–18.000K ayarlanabilir renk sıcaklığı, Wi-Fi kontrol, gün doğumu/batımı otomasyonu, CRI >98, IP67 su geçirmezlik. 30–120cm boy seçenekleri.",
+};
 
 const FEATURES = [
   "Tam spektrum, 6.500K–18.000K ayarlanabilir renk sıcaklığı",
