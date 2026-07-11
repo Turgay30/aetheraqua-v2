@@ -5,11 +5,15 @@ import TechSpecTable from "@/components/product/TechSpecTable";
 import MythologySection from "@/components/product/MythologySection";
 import WhatsAppButton from "@/components/product/WhatsAppButton";
 import DecorativeGlow from "@/components/DecorativeGlow";
+import GhostBackground from "@/components/GhostBackground";
 
 export const metadata: Metadata = {
   title: "Apollo — Profesyonel WRGB Akvaryum Aydınlatması | AetherAqua",
   description:
     "Apollo: 6.500K–18.000K ayarlanabilir renk sıcaklığı, Wi-Fi kontrol, gün doğumu/batımı otomasyonu, CRI >98, IP67 su geçirmezlik. 30–120cm boy seçenekleri.",
+  openGraph: {
+    images: [{ url: "/images/apollo-hero.jpg", width: 1264, height: 843 }],
+  },
 };
 
 const FEATURES = [
@@ -33,6 +37,7 @@ const SPEC_ROWS = [
 export default function ApolloPage() {
   return (
     <div className="relative overflow-hidden bg-abyss bg-abyss-gradient">
+      <GhostBackground opacity={0.08} />
       <DecorativeGlow />
       <div className="relative z-10">
       {/* Hero */}

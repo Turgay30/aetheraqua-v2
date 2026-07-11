@@ -1,26 +1,17 @@
 import Link from "next/link";
-import Image from "next/image";
 import ProductCard from "@/components/ProductCard";
 import AssistantBanner from "@/components/AssistantBanner";
 import SpecStrip from "@/components/SpecStrip";
 import DecorativeGlow from "@/components/DecorativeGlow";
 import LightBeam from "@/components/LightBeam";
+import GhostBackground from "@/components/GhostBackground";
 
 export default function Home() {
   return (
     <div>
       {/* Hero */}
       <div className="relative overflow-hidden bg-abyss-gradient">
-        <div className="absolute inset-0 opacity-[0.16]">
-          <Image
-            src="/images/ruins-bg.jpg"
-            alt=""
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-abyss/40 via-transparent to-abyss" />
-        </div>
+        <GhostBackground />
         <LightBeam />
         <DecorativeGlow />
         <section className="relative mx-auto flex min-h-[calc(100vh-73px)] max-w-6xl flex-col items-center justify-center px-6 py-24 text-center">

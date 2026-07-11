@@ -5,11 +5,15 @@ import TechSpecTable from "@/components/product/TechSpecTable";
 import MythologySection from "@/components/product/MythologySection";
 import WhatsAppButton from "@/components/product/WhatsAppButton";
 import DecorativeGlow from "@/components/DecorativeGlow";
+import GhostBackground from "@/components/GhostBackground";
 
 export const metadata: Metadata = {
   title: "Helios — Ekonomik WRGB Akvaryum Aydınlatması | AetherAqua",
   description:
     "Helios: sabit 8.000K çıkış, manuel kademe kontrolü, zamanlayıcı, CRI >92, IP65 su geçirmezlik. 30–120cm boy seçenekleri, 4.200 TL'den başlıyor.",
+  openGraph: {
+    images: [{ url: "/images/helios-hero.jpg", width: 1264, height: 843 }],
+  },
 };
 
 const FEATURES = [
@@ -33,6 +37,7 @@ const SPEC_ROWS = [
 export default function HeliosPage() {
   return (
     <div className="relative overflow-hidden bg-abyss bg-abyss-gradient">
+      <GhostBackground opacity={0.08} />
       <DecorativeGlow />
       <div className="relative z-10">
       {/* Hero */}
