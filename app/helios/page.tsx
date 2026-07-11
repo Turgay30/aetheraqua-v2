@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import ProductGallery from "@/components/product/ProductGallery";
+import ProductJsonLd from "@/components/ProductJsonLd";
+import CrossSell from "@/components/product/CrossSell";
 import ProductConfigurator from "@/components/product/ProductConfigurator";
 import TechSpecTable from "@/components/product/TechSpecTable";
 import MythologySection from "@/components/product/MythologySection";
@@ -40,6 +42,13 @@ export default function HeliosPage() {
     <div className="relative overflow-hidden bg-abyss bg-abyss-gradient">
       <GhostBackground opacity={0.08} />
       <ViewItemTracker id="helios" name="Helios" price={4200} />
+      <ProductJsonLd
+        name="AetherAqua Helios"
+        description="Ekonomik WRGB akvaryum aydınlatması — sabit 8.000K çıkış, manuel kademe, zamanlayıcı, CRI >92, IP65."
+        image="/images/helios-hero.jpg"
+        price={4200}
+        sku="helios"
+      />
       <DecorativeGlow />
       <div className="relative z-10">
       {/* Hero */}
@@ -117,6 +126,11 @@ export default function HeliosPage() {
             "Helios serisi bu güvenilirliği yansıtır: gösterişten uzak, sabit ve dengeli bir gündüz ışığı sunar. Akvaryumunuzun her köşesine, her gün aynı netlikte ulaşan, hiç yorulmayan bir güneş.",
           ]}
         />
+      </section>
+
+      {/* Çapraz Satış */}
+      <section className="mx-auto max-w-2xl px-6 pb-24">
+        <CrossSell current="helios" />
       </section>
       </div>
     </div>

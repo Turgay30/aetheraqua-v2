@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import ProductGallery from "@/components/product/ProductGallery";
+import ProductJsonLd from "@/components/ProductJsonLd";
+import CrossSell from "@/components/product/CrossSell";
 import ProductConfigurator from "@/components/product/ProductConfigurator";
 import TechSpecTable from "@/components/product/TechSpecTable";
 import MythologySection from "@/components/product/MythologySection";
@@ -40,6 +42,13 @@ export default function ApolloPage() {
     <div className="relative overflow-hidden bg-abyss bg-abyss-gradient">
       <GhostBackground opacity={0.08} />
       <ViewItemTracker id="apollo" name="Apollo" price={7500} />
+      <ProductJsonLd
+        name="AetherAqua Apollo"
+        description="Profesyonel WRGB akvaryum aydınlatması — 6.500K–18.000K ayarlanabilir renk sıcaklığı, Wi-Fi kontrol, CRI >98, IP67."
+        image="/images/apollo-hero.jpg"
+        price={7500}
+        sku="apollo"
+      />
       <DecorativeGlow />
       <div className="relative z-10">
       {/* Hero */}
@@ -118,6 +127,11 @@ export default function ApolloPage() {
             "Apollo serisi, bu döngüyü akvaryumunuza taşımak için tasarlandı: gün doğumunun ilk ışınlarından öğlenin keskin netliğine, alacakaranlığın sıcak tonlarından yıldızlı bir geceye kadar — her an, canlılarınızın doğal ritmine sadık kalır.",
           ]}
         />
+      </section>
+
+      {/* Çapraz Satış */}
+      <section className="mx-auto max-w-2xl px-6 pb-24">
+        <CrossSell current="apollo" />
       </section>
       </div>
     </div>
