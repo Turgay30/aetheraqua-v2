@@ -116,7 +116,7 @@ export default function HeliosPage() {
           eyebrow="Mitolojik İlham"
           title="Hiç Aksamayan Güzergah"
           paragraphs={[
-            "Antik Yunan'da Helios, dört atlı arabasını her sabah doğudan batıya sürerek göğü kat eden Titan'dı — sadakatle, hiç aksamadan, her gün aynı güzergahta.",
+            "Antik mitolojide Helios, dört atlı arabasını her sabah doğudan batıya sürerek göğü kat eden Titan'dı — sadakatle, hiç aksamadan, her gün aynı güzergahta.",
             "Helios serisi bu güvenilirliği yansıtır: gösterişten uzak, sabit ve dengeli bir gündüz ışığı sunar. Akvaryumunuzun her köşesine, her gün aynı netlikte ulaşan, hiç yorulmayan bir güneş.",
           ]}
         />

@@ -27,7 +27,7 @@ export default function HakkimizdaPage() {
             sunuyordu. Biz ikisi arasında bir denge kurmak istedik.
           </p>
           <p>
-            Ürünlerimizin isimlerini Yunan mitolojisinden seçtik çünkü
+            Ürünlerimizin isimlerini mitolojiden seçtik çünkü
             ışığın kendisi, insanlık tarihinin en eski anlatılarından
             biri. Apollo, ışığın değişken ve yaratıcı yüzünü; Helios ise
             hiç aksamayan, güvenilir gündüz ışığını temsil ediyor. Bu iki

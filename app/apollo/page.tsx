@@ -117,7 +117,7 @@ export default function ApolloPage() {
           eyebrow="Mitolojik İlham"
           title="Güneşin Günlük Yolculuğu"
           paragraphs={[
-            "Antik Yunan geleneğinde Apollo, ışığı ve düzeni gökyüzüne taşıyan tanrı olarak anılır — her gün aynı titizlikle doğar, gökyüzünü kat eder ve akşamla birlikte yerini alacağı ışığa yol verir.",
+            "Antik mitolojide Apollo, ışığı ve düzeni gökyüzüne taşıyan tanrı olarak anılır — her gün aynı titizlikle doğar, gökyüzünü kat eder ve akşamla birlikte yerini alacağı ışığa yol verir.",
             "Apollo serisi, bu döngüyü akvaryumunuza taşımak için tasarlandı: gün doğumunun ilk ışınlarından öğlenin keskin netliğine, alacakaranlığın sıcak tonlarından yıldızlı bir geceye kadar — her an, canlılarınızın doğal ritmine sadık kalır.",
           ]}
         />
