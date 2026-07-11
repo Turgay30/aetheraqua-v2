@@ -26,7 +26,7 @@ const SPEC_ROWS = [
 export default function HeliosPage() {
   return (
     <div className="relative overflow-hidden bg-helios-bg">
-      <DecorativeGlow colorA="bg-helios-bronze/15" colorB="bg-helios-sage/25" />
+      <DecorativeGlow colorA="bg-helios-bronze/35" colorB="bg-aqua-dim/30" />
       <div className="relative z-10">
       {/* Hero */}
       <section className="mx-auto grid max-w-6xl gap-10 px-6 py-20 md:grid-cols-2 md:items-center md:py-28">
