@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { CartProvider } from "@/components/cart/CartProvider";
 
 export const metadata: Metadata = {
   title: "AetherAqua — Profesyonel Akvaryum Aydınlatması",
@@ -17,9 +18,11 @@ export default function RootLayout({
   return (
     <html lang="tr">
       <body className="min-h-screen bg-abyss font-body text-ink antialiased">
-        <Navbar />
-        <main className="pt-[73px]">{children}</main>
-        <Footer />
+        <CartProvider>
+          <Navbar />
+          <main className="pt-[73px]">{children}</main>
+          <Footer />
+        </CartProvider>
       </body>
     </html>
   );

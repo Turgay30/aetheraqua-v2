@@ -87,7 +87,12 @@ export default function HeliosPage() {
             <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.25em] text-ink-faint">
               Boy & Kasa Rengi Seçin
             </p>
-            <ProductConfigurator theme="helios" basePrice={4200} productName="Helios" />
+            <ProductConfigurator
+              theme="helios"
+              basePrice={4200}
+              productName="Helios"
+              imageSrc="/images/helios-hero.jpg"
+            />
           </div>
         </div>
       </section>

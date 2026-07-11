@@ -9,6 +9,7 @@ import {
   calcDiscount,
   formatTL,
 } from "@/lib/pricing";
+import { useCart } from "@/components/cart/CartProvider";
 
 type Theme = "apollo" | "helios";
 
@@ -51,19 +52,39 @@ export default function ProductConfigurator({
   theme,
   basePrice,
   productName,
+  imageSrc,
 }: {
   theme: Theme;
   basePrice: number;
   productName: string;
+  imageSrc: string;
 }) {
   const [size, setSize] = useState<number>(SIZES_CM[0]);
   const [colorId, setColorId] = useState<string>(CASE_COLORS[0].id);
+  const [justAdded, setJustAdded] = useState(false);
+  const { addLine } = useCart();
   const s = themeStyles[theme];
 
   const listPrice = useMemo(() => calcListPrice(basePrice, size), [basePrice, size]);
   const discount = useMemo(() => calcDiscount(size), [size]);
   const salePrice = useMemo(() => calcSalePrice(basePrice, size), [basePrice, size]);
   const selectedColor = CASE_COLORS.find((c) => c.id === colorId)!;
+
+  function handleAddToCart() {
+    addLine({
+      key: `${theme}-${size}-${colorId}`,
+      productId: theme,
+      productName,
+      size,
+      colorId,
+      colorLabel: selectedColor.label,
+      colorHex: selectedColor.hex,
+      unitPrice: salePrice,
+      image: imageSrc,
+    });
+    setJustAdded(true);
+    setTimeout(() => setJustAdded(false), 1800);
+  }
 
   return (
     <div className={`rounded-2xl border ${s.border} ${s.bg} p-6 md:p-8`}>
@@ -129,9 +150,10 @@ export default function ProductConfigurator({
         )}
 
         <button
+          onClick={handleAddToCart}
           className={`mt-5 w-full rounded-full py-3.5 font-body text-sm font-semibold transition-colors ${s.button}`}
         >
-          {productName} {size}cm — Sepete Ekle
+          {justAdded ? "Sepete Eklendi ✓" : `${productName} ${size}cm — Sepete Ekle`}
         </button>
       </div>
     </div>

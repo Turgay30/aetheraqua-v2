@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useCart } from "@/components/cart/CartProvider";
 
 const links = [
   { href: "/apollo", label: "Apollo" },
@@ -11,6 +12,7 @@ const links = [
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const { totalItems } = useCart();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -54,6 +56,11 @@ export default function Navbar() {
           className="relative flex h-9 w-9 items-center justify-center rounded-full border border-abyss-border text-ink-muted transition-colors hover:border-aqua hover:text-aqua"
         >
           <CartIcon />
+          {totalItems > 0 && (
+            <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-gold font-mono text-[9px] font-bold text-abyss">
+              {totalItems > 9 ? "9+" : totalItems}
+            </span>
+          )}
         </Link>
       </nav>
     </header>

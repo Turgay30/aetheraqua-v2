@@ -88,7 +88,12 @@ export default function ApolloPage() {
             <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.25em] text-apollo-muted">
               Boy & Kasa Rengi Seçin
             </p>
-            <ProductConfigurator theme="apollo" basePrice={7500} productName="Apollo" />
+            <ProductConfigurator
+              theme="apollo"
+              basePrice={7500}
+              productName="Apollo"
+              imageSrc="/images/apollo-hero.jpg"
+            />
           </div>
         </div>
       </section>
