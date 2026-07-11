@@ -1,8 +1,6 @@
-// TODO: Gerçek GA4 Ölçüm Kimliğinizle değiştirin (Google Analytics > Yönetici > Veri Akışları)
-export const GA_MEASUREMENT_ID = "G-XXXXXXXXXX";
+export const GA_MEASUREMENT_ID: string = "G-NBM76B5HDY";
 
-// TODO: Gerçek Meta (Facebook) Pixel ID'nizle değiştirin (Meta Events Manager)
-export const META_PIXEL_ID = "0000000000000000";
+export const META_PIXEL_ID: string = "1374016234694634";
 
 // Bu ID'ler placeholder olduğu için, gerçek değerler girilene kadar
 // script'ler yüklenmez (aşağıdaki isConfigured kontrolleri).
