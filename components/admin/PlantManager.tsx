@@ -240,7 +240,10 @@ export default function PlantManager() {
               <Image src={p.image_url} alt={p.name} fill className="object-cover" />
             </div>
             <p className="p-2 font-body text-xs text-ink">{p.name}</p>
-            <p className="px-2 pb-2 font-mono text-[10px] text-ink-faint">Işık: {p.light_level}</p>
+            <p className="px-2 font-mono text-[10px] text-ink-faint">Işık: {p.light_level}</p>
+            {p.note && (
+              <p className="line-clamp-2 px-2 pb-2 pt-1 font-body text-[11px] text-ink-muted">{p.note}</p>
+            )}
             <div className="absolute right-1.5 top-1.5 flex gap-1">
               <button
                 onClick={() => startEdit(p)}

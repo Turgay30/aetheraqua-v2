@@ -10,6 +10,7 @@ import DecorativeGlow from "@/components/DecorativeGlow";
 import AddressBook from "@/components/account/AddressBook";
 import FavoritesList from "@/components/account/FavoritesList";
 import MarketingConsentToggle from "@/components/account/MarketingConsentToggle";
+import ProfileEditor from "@/components/account/ProfileEditor";
 import { buildTrackingUrl } from "@/lib/shipping";
 
 type OrderItem = {
@@ -86,6 +87,13 @@ export default function HesabimPage() {
           >
             Çıkış Yap
           </button>
+        </div>
+
+        <div className="mt-8">
+          <h2 className="mb-4 font-mono text-[11px] uppercase tracking-[0.25em] text-ink-faint">
+            Profil Bilgileri
+          </h2>
+          <ProfileEditor userId={user.id} />
         </div>
 
         <h2 className="mt-10 font-mono text-[11px] uppercase tracking-[0.25em] text-ink-faint">

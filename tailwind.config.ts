@@ -28,8 +28,8 @@ const config: Config = {
         },
         ink: {
           DEFAULT: "#E7ECEF",
-          muted: "#8B97A6",
-          faint: "#5B6675",
+          muted: "#A6B0BC",
+          faint: "#7C8794",
         },
         // Apollo alt-teması — "gece / güneş tanrısı"
         apollo: {

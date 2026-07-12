@@ -43,12 +43,17 @@ export default function PlantCard({
       <div className="relative aspect-[4/3] w-full">
         <Image src={plant.image_url} alt={plant.name} fill className="object-cover" />
       </div>
-      <div className="p-2.5">
-        <p className="font-body text-xs font-semibold text-ink">{plant.name}</p>
+      <div className="p-3">
+        <p className="font-body text-sm font-semibold text-ink">{plant.name}</p>
         <p className="mt-0.5 font-mono text-[10px] text-ink-faint">
           Işık: {plant.light_level}
           {plant.co2_required && " · CO2"}
         </p>
+        {plant.note && (
+          <p className="mt-2 border-t border-abyss-border pt-2 font-body text-xs leading-relaxed text-ink-muted">
+            {plant.note}
+          </p>
+        )}
       </div>
     </button>
   );
