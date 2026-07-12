@@ -536,3 +536,45 @@ drop trigger if exists on_product_created on public.products;
 create trigger on_product_created
   after insert on public.products
   for each row execute function public.seed_stock_for_new_product();
+
+-- ============================================
+-- 17. ERİŞİM İZİNLERİ (GRANT) — "permission denied" hatasını önler
+-- ============================================
+-- RLS politikaları erişimi KISITLAR ama temel tablo izni (GRANT) olmadan
+-- hiçbir politika işe yaramaz. Bu bölüm tüm tablolara temel izinleri verir.
+
+grant usage on schema public to anon, authenticated;
+
+grant select on public.stock to anon, authenticated;
+grant update on public.stock to authenticated;
+
+grant select, insert on public.orders to anon, authenticated;
+grant update on public.orders to authenticated;
+
+grant select, insert on public.order_items to anon, authenticated;
+
+grant select, insert, update on public.profiles to authenticated;
+
+grant select, insert, update, delete on public.addresses to authenticated;
+
+grant select, insert, delete on public.favorites to authenticated;
+
+grant select, insert, update, delete on public.reviews to authenticated;
+grant select on public.reviews to anon;
+
+grant select, update, insert, delete on public.products to authenticated;
+grant select on public.products to anon;
+
+grant select, insert, update, delete on public.fish_species to authenticated;
+grant select on public.fish_species to anon;
+
+grant select, insert, update, delete on public.fish_compatibility to authenticated;
+grant select on public.fish_compatibility to anon;
+
+grant select on public.audit_logs to authenticated;
+
+-- İleride oluşturulacak tablolar için de varsayılan izinleri ayarla
+alter default privileges in schema public
+  grant select, insert, update, delete on tables to authenticated;
+alter default privileges in schema public
+  grant select on tables to anon;
