@@ -40,21 +40,26 @@ export default function MarketingConsentToggle({ userId }: { userId: string }) {
           olmak istiyorum (KVKK kapsamında ticari elektronik ileti izni).
         </p>
       </div>
-      <button
-        onClick={toggle}
-        disabled={saving}
-        aria-pressed={consent}
-        aria-label="Pazarlama izni"
-        className={`relative h-7 w-12 flex-shrink-0 rounded-full transition-colors disabled:opacity-50 ${
-          consent ? "bg-aqua" : "bg-abyss-border"
-        }`}
-      >
-        <span
-          className={`absolute top-1 h-5 w-5 rounded-full bg-abyss transition-transform ${
-            consent ? "translate-x-6" : "translate-x-1"
+      <div className="flex flex-shrink-0 items-center gap-2.5">
+        <span className={`font-body text-xs font-semibold ${consent ? "text-aqua" : "text-ink-faint"}`}>
+          {consent ? "Açık" : "Kapalı"}
+        </span>
+        <button
+          onClick={toggle}
+          disabled={saving}
+          aria-pressed={consent}
+          aria-label="Pazarlama izni"
+          className={`relative h-7 w-12 overflow-hidden rounded-full transition-colors disabled:opacity-50 ${
+            consent ? "bg-aqua" : "bg-abyss-border"
           }`}
-        />
-      </button>
+        >
+          <span
+            className={`absolute left-1 top-1 h-5 w-5 rounded-full bg-abyss transition-transform ${
+              consent ? "translate-x-5" : "translate-x-0"
+            }`}
+          />
+        </button>
+      </div>
     </div>
   );
 }

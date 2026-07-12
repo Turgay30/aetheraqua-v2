@@ -66,8 +66,23 @@ export default function ProductConfigurator({
   const [justAdded, setJustAdded] = useState(false);
   const [stockQty, setStockQty] = useState<number | null>(null);
   const [stockLoading, setStockLoading] = useState(true);
+  const [livePrice, setLivePrice] = useState<number>(basePrice);
   const { addLine } = useCart();
   const s = themeStyles[theme];
+
+  // Fiyatı veritabanından çek — admin panelden güncellenmiş olabilir.
+  // Bulunamazsa (henüz şema çalıştırılmadıysa) prop'taki varsayılana düşer.
+  useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from("products")
+      .select("base_price")
+      .eq("product_id", theme)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.base_price) setLivePrice(Number(data.base_price));
+      });
+  }, [theme]);
 
   useEffect(() => {
     let cancelled = false;
@@ -89,9 +104,9 @@ export default function ProductConfigurator({
     };
   }, [theme, size]);
 
-  const listPrice = useMemo(() => calcListPrice(basePrice, size), [basePrice, size]);
+  const listPrice = useMemo(() => calcListPrice(livePrice, size), [livePrice, size]);
   const discount = useMemo(() => calcDiscount(size), [size]);
-  const salePrice = useMemo(() => calcSalePrice(basePrice, size), [basePrice, size]);
+  const salePrice = useMemo(() => calcSalePrice(livePrice, size), [livePrice, size]);
   const selectedColor = CASE_COLORS.find((c) => c.id === colorId)!;
 
   function handleAddToCart() {

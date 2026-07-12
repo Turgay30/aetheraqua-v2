@@ -331,3 +331,38 @@ drop trigger if exists on_order_status_change on public.orders;
 create trigger on_order_status_change
   after update on public.orders
   for each row execute function public.log_order_status_change();
+
+-- ============================================
+-- 12. ÜRÜN FİYATLARI (Admin'den düzenlenebilir)
+-- ============================================
+create table if not exists public.products (
+  product_id text primary key check (product_id in ('apollo','helios')),
+  base_price numeric(10,2) not null,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.products enable row level security;
+
+drop policy if exists "Ürün fiyatları herkese açık okunabilir" on public.products;
+create policy "Ürün fiyatları herkese açık okunabilir"
+  on public.products for select
+  to anon, authenticated
+  using (true);
+
+drop policy if exists "Admin ürün fiyatlarını güncelleyebilir" on public.products;
+create policy "Admin ürün fiyatlarını güncelleyebilir"
+  on public.products for update
+  to authenticated
+  using (auth.jwt() ->> 'email' = 'turgayturan705@gmail.com');
+
+insert into public.products (product_id, base_price) values
+  ('apollo', 7500),
+  ('helios', 4200)
+on conflict (product_id) do nothing;
+
+-- Admin ayrıca stok miktarını da güncelleyebilsin
+drop policy if exists "Admin stok güncelleyebilir" on public.stock;
+create policy "Admin stok güncelleyebilir"
+  on public.stock for update
+  to authenticated
+  using (auth.jwt() ->> 'email' = 'turgayturan705@gmail.com');
