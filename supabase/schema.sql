@@ -158,3 +158,22 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
+
+-- ============================================
+-- 5. SİPARİŞ VERİLİNCE STOĞU OTOMATİK DÜŞÜR
+-- ============================================
+create or replace function public.decrement_stock()
+returns trigger as $$
+begin
+  update public.stock
+  set quantity = greatest(quantity - new.quantity, 0),
+      updated_at = now()
+  where product_id = new.product_id and size = new.size;
+  return new;
+end;
+$$ language plpgsql security definer;
+
+drop trigger if exists on_order_item_created on public.order_items;
+create trigger on_order_item_created
+  after insert on public.order_items
+  for each row execute function public.decrement_stock();

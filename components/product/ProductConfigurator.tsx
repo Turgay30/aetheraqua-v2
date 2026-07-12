@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   SIZES_CM,
   CASE_COLORS,
@@ -11,6 +11,7 @@ import {
 } from "@/lib/pricing";
 import { useCart } from "@/components/cart/CartProvider";
 import { trackAddToCart } from "@/lib/analytics";
+import { createClient } from "@/lib/supabase/client";
 
 type Theme = "apollo" | "helios";
 
@@ -63,8 +64,30 @@ export default function ProductConfigurator({
   const [size, setSize] = useState<number>(SIZES_CM[0]);
   const [colorId, setColorId] = useState<string>(CASE_COLORS[0].id);
   const [justAdded, setJustAdded] = useState(false);
+  const [stockQty, setStockQty] = useState<number | null>(null);
+  const [stockLoading, setStockLoading] = useState(true);
   const { addLine } = useCart();
   const s = themeStyles[theme];
+
+  useEffect(() => {
+    let cancelled = false;
+    setStockLoading(true);
+    const supabase = createClient();
+    supabase
+      .from("stock")
+      .select("quantity")
+      .eq("product_id", theme)
+      .eq("size", size)
+      .single()
+      .then(({ data }) => {
+        if (cancelled) return;
+        setStockQty(data ? data.quantity : null);
+        setStockLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [theme, size]);
 
   const listPrice = useMemo(() => calcListPrice(basePrice, size), [basePrice, size]);
   const discount = useMemo(() => calcDiscount(size), [size]);
@@ -151,11 +174,34 @@ export default function ProductConfigurator({
           </p>
         )}
 
+        {!stockLoading && stockQty !== null && (
+          <p
+            className={`mt-3 font-body text-xs font-semibold ${
+              stockQty === 0
+                ? "text-red-400"
+                : stockQty <= 5
+                  ? "text-gold"
+                  : "text-emerald-400"
+            }`}
+          >
+            {stockQty === 0
+              ? "Tükendi"
+              : stockQty <= 5
+                ? `Son ${stockQty} adet`
+                : "Stokta"}
+          </p>
+        )}
+
         <button
           onClick={handleAddToCart}
-          className={`mt-5 w-full rounded-full py-3.5 font-body text-sm font-semibold transition-colors ${s.button}`}
+          disabled={stockQty === 0}
+          className={`mt-5 w-full rounded-full py-3.5 font-body text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${s.button}`}
         >
-          {justAdded ? "Sepete Eklendi ✓" : `${productName} ${size}cm — Sepete Ekle`}
+          {stockQty === 0
+            ? "Stokta Yok"
+            : justAdded
+              ? "Sepete Eklendi ✓"
+              : `${productName} ${size}cm — Sepete Ekle`}
         </button>
       </div>
     </div>
