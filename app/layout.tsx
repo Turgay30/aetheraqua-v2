@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { CartProvider } from "@/components/cart/CartProvider";
 import { AuthProvider } from "@/components/auth/AuthProvider";
+import ToastProvider from "@/components/ToastProvider";
 import AnalyticsScripts from "@/components/analytics/AnalyticsScripts";
 import OrganizationJsonLd from "@/components/OrganizationJsonLd";
 
@@ -40,13 +41,15 @@ export default function RootLayout({
       <body className="min-h-screen bg-abyss font-body text-ink antialiased">
         <OrganizationJsonLd />
         <AnalyticsScripts />
-        <AuthProvider>
-          <CartProvider>
-            <Navbar />
-            <main className="pt-[73px]">{children}</main>
-            <Footer />
-          </CartProvider>
-        </AuthProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <CartProvider>
+              <Navbar />
+              <main className="pt-[73px]">{children}</main>
+              <Footer />
+            </CartProvider>
+          </AuthProvider>
+        </ToastProvider>
       </body>
     </html>
   );

@@ -1,5 +1,7 @@
 "use client";
 
+import { useToast } from "@/components/ToastProvider";
+
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
@@ -20,6 +22,7 @@ type Plant = {
 const emptyForm = { name: "", note: "", lightLevel: "orta" as Plant["light_level"], co2Required: false };
 
 export default function PlantManager() {
+  const { showToast } = useToast();
   const [plants, setPlants] = useState<Plant[]>([]);
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
@@ -74,7 +77,7 @@ export default function PlantManager() {
     const isEdit = !!editingId;
     const newId = slugify(form.name);
     if (!isEdit && !file) {
-      alert("Lütfen bir görsel seçin.");
+      showToast("Lütfen bir görsel seçin.", "error");
       return;
     }
     setSaving(true);
@@ -85,7 +88,7 @@ export default function PlantManager() {
       imageUrl = await uploadImage(file, "plants");
       if (!imageUrl) {
         setSaving(false);
-        alert("Görsel yüklenemedi, tekrar deneyin.");
+        showToast("Görsel yüklenemedi, tekrar deneyin.", "error");
         return;
       }
     }
@@ -101,7 +104,7 @@ export default function PlantManager() {
       const { error } = await supabase.from("plants").update(payload).eq("id", editingId);
       if (error) {
         setSaving(false);
-        alert("Güncellenirken bir sorun oluştu: " + error.message);
+        showToast("Güncellenirken bir sorun oluştu: " + error.message, "error");
         return;
       }
     } else {
@@ -115,7 +118,7 @@ export default function PlantManager() {
       });
       if (error) {
         setSaving(false);
-        alert("Bitki eklenirken bir sorun oluştu: " + error.message);
+        showToast("Bitki eklenirken bir sorun oluştu: " + error.message, "error");
         return;
       }
     }
@@ -123,6 +126,7 @@ export default function PlantManager() {
     await saveCompatibility("plant", isEdit ? editingId! : newId, incompatibleWith);
 
     setSaving(false);
+    showToast(isEdit ? "Bitki güncellendi" : "Bitki eklendi", "success");
     cancelForm();
     load();
   }
@@ -131,6 +135,7 @@ export default function PlantManager() {
     if (!confirm("Bu bitkiyi silmek istediğinize emin misiniz?")) return;
     const supabase = createClient();
     await supabase.from("plants").delete().eq("id", id);
+    showToast("Bitki silindi", "success");
     load();
   }
 

@@ -1,5 +1,7 @@
 "use client";
 
+import { useToast } from "@/components/ToastProvider";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -25,6 +27,7 @@ const emptyForm = {
 };
 
 export default function ProductManager() {
+  const { showToast } = useToast();
   const [products, setProducts] = useState<CustomProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
@@ -67,7 +70,7 @@ export default function ProductManager() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (files.length === 0) {
-      alert("En az bir görsel ekleyin.");
+      showToast("En az bir görsel ekleyin.", "error");
       return;
     }
     setSaving(true);
@@ -81,7 +84,7 @@ export default function ProductManager() {
     const id = slugify(form.name);
     if (id === "apollo" || id === "helios") {
       setSaving(false);
-      alert("Bu isim ayrılmış, lütfen başka bir isim kullanın.");
+      showToast("Bu isim ayrılmış, lütfen başka bir isim kullanın.", "error");
       return;
     }
 
@@ -104,7 +107,7 @@ export default function ProductManager() {
     setSaving(false);
 
     if (error) {
-      alert("Ürün eklenirken bir sorun oluştu: " + error.message);
+      showToast("Ürün eklenirken bir sorun oluştu: " + error.message, "error");
       return;
     }
 
@@ -114,6 +117,7 @@ export default function ProductManager() {
     setFeatures([""]);
     setTechSpecs([{ label: "", value: "" }]);
     setMythParagraphs([""]);
+    showToast("Ürün yayına alındı", "success");
     load();
   }
 
@@ -121,6 +125,7 @@ export default function ProductManager() {
     if (!confirm("Bu ürünü kalıcı olarak silmek istediğinize emin misiniz?")) return;
     const supabase = createClient();
     await supabase.from("products").delete().eq("product_id", id);
+    showToast("Ürün silindi", "success");
     load();
   }
 

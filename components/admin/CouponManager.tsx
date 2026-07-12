@@ -1,5 +1,7 @@
 "use client";
 
+import { useToast } from "@/components/ToastProvider";
+
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -14,6 +16,7 @@ type CouponRow = {
 };
 
 export default function CouponManager() {
+  const { showToast } = useToast();
   const [coupons, setCoupons] = useState<CouponRow[] | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -49,18 +52,20 @@ export default function CouponManager() {
     setSaving(false);
 
     if (error) {
-      alert("Kupon eklenirken bir sorun oluştu: " + error.message);
+      showToast("Kupon eklenirken bir sorun oluştu: " + error.message, "error");
       return;
     }
 
     setFormOpen(false);
     setForm({ code: "", type: "percent", value: "10", expiresAt: "", usageLimit: "" });
+    showToast("Kupon oluşturuldu", "success");
     load();
   }
 
   async function toggleActive(code: string, isActive: boolean) {
     const supabase = createClient();
     await supabase.from("coupons").update({ is_active: !isActive }).eq("code", code);
+    showToast(isActive ? "Kupon pasif yapıldı" : "Kupon aktif yapıldı", "success");
     load();
   }
 
@@ -68,6 +73,7 @@ export default function CouponManager() {
     if (!confirm(`"${code}" kuponunu silmek istediğinize emin misiniz?`)) return;
     const supabase = createClient();
     await supabase.from("coupons").delete().eq("code", code);
+    showToast("Kupon silindi", "success");
     load();
   }
 

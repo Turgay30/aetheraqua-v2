@@ -1,5 +1,7 @@
 "use client";
 
+import { useToast } from "@/components/ToastProvider";
+
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
@@ -21,6 +23,7 @@ type Shrimp = {
 };
 
 export default function ShrimpManager() {
+  const { showToast } = useToast();
   const [species, setSpecies] = useState<Shrimp[]>([]);
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
@@ -101,7 +104,7 @@ export default function ShrimpManager() {
     const isEdit = !!editingId;
 
     if (!isEdit && !file) {
-      alert("Lütfen bir görsel seçin.");
+      showToast("Lütfen bir görsel seçin.", "error");
       return;
     }
     setSaving(true);
@@ -113,7 +116,7 @@ export default function ShrimpManager() {
       imageUrl = await uploadImage(file, "shrimp");
       if (!imageUrl) {
         setSaving(false);
-        alert("Görsel yüklenemedi, tekrar deneyin.");
+        showToast("Görsel yüklenemedi, tekrar deneyin.", "error");
         return;
       }
     }
@@ -134,7 +137,7 @@ export default function ShrimpManager() {
       const { error } = await supabase.from("shrimp_species").update(updatePayload).eq("id", id);
       if (error) {
         setSaving(false);
-        alert("Güncellenirken bir sorun oluştu: " + error.message);
+        showToast("Güncellenirken bir sorun oluştu: " + error.message, "error");
         return;
       }
     } else {
@@ -150,7 +153,7 @@ export default function ShrimpManager() {
       });
       if (error) {
         setSaving(false);
-        alert("Kabuklu eklenirken bir sorun oluştu: " + error.message);
+        showToast("Kabuklu eklenirken bir sorun oluştu: " + error.message, "error");
         return;
       }
     }
@@ -158,6 +161,7 @@ export default function ShrimpManager() {
     await saveCompatibility("shrimp", id, incompatibleWith);
 
     setSaving(false);
+    showToast(editingId ? "Kabuklu güncellendi" : "Kabuklu eklendi", "success");
     cancelForm();
     loadSpecies();
   }
@@ -166,6 +170,7 @@ export default function ShrimpManager() {
     if (!confirm("Bu türü silmek istediğinize emin misiniz? Uyumluluk ilişkileri de silinecek.")) return;
     const supabase = createClient();
     await supabase.from("shrimp_species").delete().eq("id", id);
+    showToast("Kabuklu silindi", "success");
     loadSpecies();
   }
 

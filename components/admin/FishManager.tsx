@@ -1,5 +1,7 @@
 "use client";
 
+import { useToast } from "@/components/ToastProvider";
+
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
@@ -11,6 +13,7 @@ import CompatibilityPicker from "@/components/admin/CompatibilityPicker";
 import FormField from "@/components/admin/FormField";
 
 export default function FishManager() {
+  const { showToast } = useToast();
   const [species, setSpecies] = useState<FishSpecies[]>([]);
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
@@ -91,7 +94,7 @@ export default function FishManager() {
     const isEdit = !!editingId;
 
     if (!isEdit && !file) {
-      alert("Lütfen bir görsel seçin.");
+      showToast("Lütfen bir görsel seçin.", "error");
       return;
     }
     setSaving(true);
@@ -103,7 +106,7 @@ export default function FishManager() {
       imageUrl = await uploadImage(file, "fish");
       if (!imageUrl) {
         setSaving(false);
-        alert("Görsel yüklenemedi, tekrar deneyin.");
+        showToast("Görsel yüklenemedi, tekrar deneyin.", "error");
         return;
       }
     }
@@ -124,7 +127,7 @@ export default function FishManager() {
       const { error } = await supabase.from("fish_species").update(updatePayload).eq("id", id);
       if (error) {
         setSaving(false);
-        alert("Güncellenirken bir sorun oluştu: " + error.message);
+        showToast("Güncellenirken bir sorun oluştu: " + error.message, "error");
         return;
       }
     } else {
@@ -140,7 +143,7 @@ export default function FishManager() {
       });
       if (error) {
         setSaving(false);
-        alert("Balık eklenirken bir sorun oluştu: " + error.message);
+        showToast("Balık eklenirken bir sorun oluştu: " + error.message, "error");
         return;
       }
     }
@@ -148,6 +151,7 @@ export default function FishManager() {
     await saveCompatibility("fish", id, incompatibleWith);
 
     setSaving(false);
+    showToast(editingId ? "Balık güncellendi" : "Balık eklendi", "success");
     cancelForm();
     loadSpecies();
   }
@@ -156,6 +160,7 @@ export default function FishManager() {
     if (!confirm("Bu balığı silmek istediğinize emin misiniz? Uyumluluk ilişkileri de silinecek.")) return;
     const supabase = createClient();
     await supabase.from("fish_species").delete().eq("id", id);
+    showToast("Balık silindi", "success");
     loadSpecies();
   }
 

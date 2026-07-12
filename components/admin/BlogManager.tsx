@@ -1,5 +1,7 @@
 "use client";
 
+import { useToast } from "@/components/ToastProvider";
+
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { uploadImage } from "@/lib/supabase/storage";
@@ -18,6 +20,7 @@ type Post = {
 const emptyForm = { title: "", excerpt: "", content: "" };
 
 export default function BlogManager() {
+  const { showToast } = useToast();
   const [posts, setPosts] = useState<Post[] | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -82,7 +85,7 @@ export default function BlogManager() {
       const { error } = await supabase.from("blog_posts").update(payload).eq("id", editingId);
       setSaving(false);
       if (error) {
-        alert("Güncellenirken bir sorun oluştu: " + error.message);
+        showToast("Güncellenirken bir sorun oluştu: " + error.message, "error");
         return;
       }
     } else {
@@ -95,11 +98,12 @@ export default function BlogManager() {
       });
       setSaving(false);
       if (error) {
-        alert("Yazı eklenirken bir sorun oluştu: " + error.message);
+        showToast("Yazı eklenirken bir sorun oluştu: " + error.message, "error");
         return;
       }
     }
 
+    showToast(editingId ? "Yazı güncellendi" : "Yazı yayınlandı", "success");
     cancelForm();
     load();
   }
@@ -107,6 +111,7 @@ export default function BlogManager() {
   async function togglePublished(id: string, published: boolean) {
     const supabase = createClient();
     await supabase.from("blog_posts").update({ published: !published }).eq("id", id);
+    showToast(published ? "Taslağa alındı" : "Yayına alındı", "success");
     load();
   }
 
@@ -114,6 +119,7 @@ export default function BlogManager() {
     if (!confirm("Bu yazıyı silmek istediğinize emin misiniz?")) return;
     const supabase = createClient();
     await supabase.from("blog_posts").delete().eq("id", id);
+    showToast("Yazı silindi", "success");
     load();
   }
 
