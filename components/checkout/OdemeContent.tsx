@@ -174,6 +174,9 @@ export default function OdemeContent() {
           quantity: line.quantity,
           unit_price: line.unitPrice,
         })),
+        subtotal,
+        couponCode: coupon?.code ?? null,
+        couponDiscount,
         total: totalPrice,
       }),
     }).catch(() => {});

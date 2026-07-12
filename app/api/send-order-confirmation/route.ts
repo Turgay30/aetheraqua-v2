@@ -14,6 +14,9 @@ type OrderPayload = {
   customerEmail: string;
   customerAddress: string;
   items: OrderItem[];
+  subtotal: number;
+  couponCode?: string | null;
+  couponDiscount?: number;
   total: number;
 };
 
@@ -22,46 +25,147 @@ function formatTL(n: number) {
 }
 
 function buildEmailHtml(order: OrderPayload): string {
+  const firstName = order.customerName.split(" ")[0] || order.customerName;
+
   const itemRows = order.items
     .map(
-      (item) => `
+      (item, i) => `
         <tr>
-          <td style="padding:10px 0;border-bottom:1px solid #e5e5e5;color:#1a1a1a;font-size:14px;">
-            ${item.product_name} ${item.size}cm (${item.color_label})<br/>
-            <span style="color:#888;font-size:13px;">${item.quantity} adet</span>
+          <td style="padding:16px 0;border-bottom:1px solid #1E2A3A;">
+            <p style="margin:0;font-family:Georgia,serif;font-size:15px;color:#E7ECEF;">${item.product_name} · ${item.size}cm</p>
+            <p style="margin:4px 0 0;font-family:Arial,sans-serif;font-size:12px;letter-spacing:0.3px;color:#7C8794;">${item.color_label} · ${item.quantity} adet</p>
           </td>
-          <td style="padding:10px 0;border-bottom:1px solid #e5e5e5;color:#1a1a1a;font-size:14px;text-align:right;">
-            ${formatTL(item.unit_price * item.quantity)}
+          <td style="padding:16px 0;border-bottom:1px solid #1E2A3A;text-align:right;vertical-align:top;">
+            <p style="margin:0;font-family:Georgia,serif;font-size:15px;color:#E7ECEF;white-space:nowrap;">${formatTL(item.unit_price * item.quantity)}</p>
           </td>
-        </tr>`
+        </tr>${i === 0 ? "" : ""}`
     )
     .join("");
 
-  return `
-  <div style="font-family:Georgia,serif;max-width:520px;margin:0 auto;padding:32px 24px;background:#0B1220;color:#E7ECEF;">
-    <p style="font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#22D3B8;margin:0 0 8px;">AetherAqua</p>
-    <h1 style="font-size:24px;margin:0 0 24px;color:#fff;">Siparişiniz Alındı</h1>
-    <p style="font-size:14px;line-height:1.6;color:#c5cdd6;">
-      Merhaba ${order.customerName},<br/><br/>
-      <strong>${order.orderNo}</strong> numaralı siparişiniz başarıyla alındı. Aşağıda sipariş detaylarınızı bulabilirsiniz.
-    </p>
+  const hasDiscount = !!order.couponDiscount && order.couponDiscount > 0;
 
-    <table style="width:100%;border-collapse:collapse;margin-top:20px;">
-      ${itemRows}
-      <tr>
-        <td style="padding:14px 0 0;font-size:15px;font-weight:bold;color:#fff;">Toplam</td>
-        <td style="padding:14px 0 0;font-size:15px;font-weight:bold;color:#C9A227;text-align:right;">${formatTL(order.total)}</td>
-      </tr>
-    </table>
+  return `<!DOCTYPE html>
+<html lang="tr">
+<body style="margin:0;padding:0;background-color:#060A10;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#060A10;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background-color:#0B1220;border:1px solid #1E2A3A;border-radius:16px;overflow:hidden;">
 
-    <p style="margin-top:24px;font-size:13px;color:#8B97A6;">
-      Teslimat Adresi:<br/>${order.customerAddress}
-    </p>
+          <!-- Üst şerit -->
+          <tr>
+            <td style="background:linear-gradient(90deg,#0B1220,#101B2C);padding:36px 40px 28px;border-bottom:1px solid #1E2A3A;">
+              <p style="margin:0;font-family:Georgia,serif;font-size:22px;letter-spacing:0.5px;">
+                <span style="color:#E7ECEF;">AETHER</span><span style="color:#22D3B8;">AQUA</span>
+              </p>
+              <p style="margin:6px 0 0;font-family:Arial,sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#7C8794;">
+                Mitolojiden İlham Alan Akvaryum Aydınlatmaları
+              </p>
+            </td>
+          </tr>
 
-    <p style="margin-top:32px;font-size:12px;color:#5B6675;">
-      Sorularınız için bize <a href="mailto:infoaetheraqua@gmail.com" style="color:#22D3B8;">infoaetheraqua@gmail.com</a> adresinden ulaşabilirsiniz.
-    </p>
-  </div>`;
+          <!-- Onay mesajı -->
+          <tr>
+            <td style="padding:36px 40px 8px;">
+              <p style="margin:0 0 6px;font-family:Arial,sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#22D3B8;">
+                Sipariş Onayı
+              </p>
+              <h1 style="margin:0 0 16px;font-family:Georgia,serif;font-size:26px;color:#ffffff;font-weight:normal;">
+                Teşekkürler, ${firstName}
+              </h1>
+              <p style="margin:0;font-family:Arial,sans-serif;font-size:14px;line-height:1.7;color:#A6B0BC;">
+                Siparişiniz alındı ve hazırlanmak üzere kuyruğa girdi. Kargoya verildiğinde ayrıca bilgilendirileceksiniz.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Sipariş no rozeti -->
+          <tr>
+            <td style="padding:20px 40px 0;">
+              <table role="presentation" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="background-color:#101B2C;border:1px solid #22D3B8;border-radius:10px;padding:10px 18px;">
+                    <p style="margin:0;font-family:Arial,sans-serif;font-size:11px;letter-spacing:1px;color:#7C8794;">SİPARİŞ NO</p>
+                    <p style="margin:2px 0 0;font-family:Georgia,serif;font-size:16px;color:#22D3B8;">${order.orderNo}</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Ürünler -->
+          <tr>
+            <td style="padding:28px 40px 0;">
+              <p style="margin:0 0 4px;font-family:Arial,sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#7C8794;">
+                Sipariş Detayı
+              </p>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                ${itemRows}
+              </table>
+            </td>
+          </tr>
+
+          <!-- Toplamlar -->
+          <tr>
+            <td style="padding:0 40px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;">
+                <tr>
+                  <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:13px;color:#7C8794;">Ara Toplam</td>
+                  <td style="padding:6px 0;text-align:right;font-family:Arial,sans-serif;font-size:13px;color:#A6B0BC;">${formatTL(order.subtotal)}</td>
+                </tr>
+                ${
+                  hasDiscount
+                    ? `<tr>
+                  <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:13px;color:#22D3B8;">Kupon (${order.couponCode})</td>
+                  <td style="padding:6px 0;text-align:right;font-family:Arial,sans-serif;font-size:13px;color:#22D3B8;">−${formatTL(order.couponDiscount!)}</td>
+                </tr>`
+                    : ""
+                }
+                <tr>
+                  <td style="padding:14px 0 4px;font-family:Georgia,serif;font-size:17px;color:#ffffff;border-top:1px solid #1E2A3A;">Toplam</td>
+                  <td style="padding:14px 0 4px;text-align:right;font-family:Georgia,serif;font-size:19px;color:#C9A227;border-top:1px solid #1E2A3A;">${formatTL(order.total)}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Teslimat adresi -->
+          <tr>
+            <td style="padding:28px 40px 0;">
+              <p style="margin:0 0 8px;font-family:Arial,sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#7C8794;">
+                Teslimat Adresi
+              </p>
+              <p style="margin:0;font-family:Arial,sans-serif;font-size:13px;line-height:1.7;color:#A6B0BC;">
+                ${order.customerAddress}
+              </p>
+            </td>
+          </tr>
+
+          <!-- Alt bilgi -->
+          <tr>
+            <td style="padding:36px 40px 32px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #1E2A3A;padding-top:24px;">
+                <tr><td style="padding-top:24px;">
+                  <p style="margin:0 0 4px;font-family:Arial,sans-serif;font-size:13px;color:#A6B0BC;">
+                    Sorularınız için buradayız
+                  </p>
+                  <p style="margin:0;font-family:Arial,sans-serif;font-size:13px;">
+                    <a href="mailto:infoaetheraqua@gmail.com" style="color:#22D3B8;text-decoration:none;">infoaetheraqua@gmail.com</a>
+                  </p>
+                  <p style="margin:20px 0 0;font-family:Arial,sans-serif;font-size:11px;color:#5B6675;">
+                    © ${new Date().getFullYear()} AetherAqua · aetheraqua.com
+                  </p>
+                </td></tr>
+              </table>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
 }
 
 export async function POST(request: Request) {
