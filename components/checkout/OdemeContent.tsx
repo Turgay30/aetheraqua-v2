@@ -55,6 +55,23 @@ export default function OdemeContent() {
       name: prev.name || (user.user_metadata?.full_name as string) || "",
       email: prev.email || user.email || "",
     }));
+
+    const supabase = createClient();
+    supabase
+      .from("addresses")
+      .select("recipient_name, phone, address_text")
+      .eq("user_id", user.id)
+      .eq("is_default", true)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!data) return;
+        setForm((prev) => ({
+          ...prev,
+          name: prev.name || data.recipient_name,
+          phone: prev.phone || data.phone,
+          address: prev.address || data.address_text,
+        }));
+      });
   }, [user]);
 
   if (!isLoaded) return null;

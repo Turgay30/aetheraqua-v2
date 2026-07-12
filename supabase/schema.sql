@@ -177,3 +177,67 @@ drop trigger if exists on_order_item_created on public.order_items;
 create trigger on_order_item_created
   after insert on public.order_items
   for each row execute function public.decrement_stock();
+
+-- ============================================
+-- 6. ADRES DEFTERİ
+-- ============================================
+create table if not exists public.addresses (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  label text not null default 'Ev',
+  recipient_name text not null,
+  phone text not null,
+  address_text text not null,
+  is_default boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+alter table public.addresses enable row level security;
+
+drop policy if exists "Kullanıcı kendi adreslerini yönetebilir" on public.addresses;
+create policy "Kullanıcı kendi adreslerini yönetebilir"
+  on public.addresses for all
+  to authenticated
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+-- ============================================
+-- 7. FAVORİLER
+-- ============================================
+create table if not exists public.favorites (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  product_id text not null check (product_id in ('apollo','helios')),
+  created_at timestamptz not null default now(),
+  primary key (user_id, product_id)
+);
+
+alter table public.favorites enable row level security;
+
+drop policy if exists "Kullanıcı kendi favorilerini yönetebilir" on public.favorites;
+create policy "Kullanıcı kendi favorilerini yönetebilir"
+  on public.favorites for all
+  to authenticated
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+-- ============================================
+-- 8. ADMİN ERİŞİMİ (sipariş yönetimi için)
+-- ============================================
+-- NOT: Aşağıdaki e-posta adresini kendi admin hesabınızla değiştirin.
+drop policy if exists "Admin tüm siparişleri görebilir" on public.orders;
+create policy "Admin tüm siparişleri görebilir"
+  on public.orders for select
+  to authenticated
+  using (auth.jwt() ->> 'email' = 'turgayturan705@gmail.com');
+
+drop policy if exists "Admin sipariş durumunu güncelleyebilir" on public.orders;
+create policy "Admin sipariş durumunu güncelleyebilir"
+  on public.orders for update
+  to authenticated
+  using (auth.jwt() ->> 'email' = 'turgayturan705@gmail.com');
+
+drop policy if exists "Admin tüm sipariş kalemlerini görebilir" on public.order_items;
+create policy "Admin tüm sipariş kalemlerini görebilir"
+  on public.order_items for select
+  to authenticated
+  using (auth.jwt() ->> 'email' = 'turgayturan705@gmail.com');

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import ProductGallery from "@/components/product/ProductGallery";
+import FavoriteButton from "@/components/product/FavoriteButton";
 import ProductJsonLd from "@/components/ProductJsonLd";
 import CrossSell from "@/components/product/CrossSell";
 import ProductConfigurator from "@/components/product/ProductConfigurator";
@@ -57,9 +58,12 @@ export default function HeliosPage() {
           <p className="font-mono text-xs uppercase tracking-[0.35em] text-helios-bronze">
             Gündüzün Taşıyıcısı
           </p>
-          <h1 className="mt-4 font-display text-6xl text-ink md:text-7xl">
-            Helios
-          </h1>
+          <div className="mt-4 flex items-center gap-3">
+            <h1 className="font-display text-6xl text-ink md:text-7xl">
+              Helios
+            </h1>
+            <FavoriteButton productId="helios" className="border border-abyss-border !bg-transparent" />
+          </div>
           <p className="mt-5 max-w-md font-body text-[15px] leading-relaxed text-ink-muted">
             Her akvaryum için doğru, dengeli ve güvenilir bir gündüz ışığı.
             Helios, gösterişten çok tutarlılığa odaklanır — kurar, ayarlar ve

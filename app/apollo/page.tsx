@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import ProductGallery from "@/components/product/ProductGallery";
+import FavoriteButton from "@/components/product/FavoriteButton";
 import ProductJsonLd from "@/components/ProductJsonLd";
 import CrossSell from "@/components/product/CrossSell";
 import ProductConfigurator from "@/components/product/ProductConfigurator";
@@ -57,9 +58,12 @@ export default function ApolloPage() {
           <p className="font-mono text-xs uppercase tracking-[0.35em] text-apollo-gold">
             Işığın Efendisi
           </p>
-          <h1 className="mt-4 font-display text-6xl text-apollo-text md:text-7xl">
-            Apollo
-          </h1>
+          <div className="mt-4 flex items-center gap-3">
+            <h1 className="font-display text-6xl text-apollo-text md:text-7xl">
+              Apollo
+            </h1>
+            <FavoriteButton productId="apollo" className="border border-apollo-gold/20 !bg-transparent" />
+          </div>
           <p className="mt-5 max-w-md font-body text-[15px] leading-relaxed text-apollo-muted">
             Üst segment akvaryumlar için tasarlanan Apollo, gün ışığının tüm
             tayfını su altına taşır. Gün doğumundan gün batımına, bulutların

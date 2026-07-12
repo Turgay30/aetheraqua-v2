@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import FavoriteButton from "@/components/product/FavoriteButton";
 
 type Variant = "apollo" | "helios";
 
@@ -101,6 +102,11 @@ export default function ProductCard({
           </div>
         </div>
       </Link>
+
+      {/* Favori butonu — Link'in üzerinde ayrı, bağımsız bir buton */}
+      <div className="absolute right-3 top-3 z-10">
+        <FavoriteButton productId={variant} />
+      </div>
 
       {/* Hızlı Bakış — Link'in üzerinde ayrı, bağımsız bir buton */}
       <button

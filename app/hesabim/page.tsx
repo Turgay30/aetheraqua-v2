@@ -7,6 +7,8 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
 import { formatTL } from "@/lib/pricing";
 import DecorativeGlow from "@/components/DecorativeGlow";
+import AddressBook from "@/components/account/AddressBook";
+import FavoritesList from "@/components/account/FavoritesList";
 
 type OrderItem = {
   id: string;
@@ -132,6 +134,15 @@ export default function HesabimPage() {
             })}
           </div>
         )}
+
+        <h2 className="mt-12 font-mono text-[11px] uppercase tracking-[0.25em] text-ink-faint">
+          Favorilerim
+        </h2>
+        <FavoritesList userId={user.id} />
+
+        <div className="mt-12">
+          <AddressBook userId={user.id} />
+        </div>
       </section>
     </div>
   );
