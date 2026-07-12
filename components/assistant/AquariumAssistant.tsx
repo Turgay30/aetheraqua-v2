@@ -9,6 +9,7 @@ import FishCard, { CardStatus } from "@/components/assistant/FishCard";
 import StockingSummary from "@/components/assistant/StockingSummary";
 import EquipmentRecommendation from "@/components/assistant/EquipmentRecommendation";
 import StickySummaryBar from "@/components/assistant/StickySummaryBar";
+import ShareResult from "@/components/assistant/ShareResult";
 
 export default function AquariumAssistant() {
   const [liters, setLiters] = useState(60);
@@ -151,9 +152,22 @@ export default function AquariumAssistant() {
 
       {/* 3-4. Stoklama + Ekipman */}
       {selectedIds.length > 0 && (
-        <div id="stoklama-detay" className="grid scroll-mt-24 gap-6 pb-16 md:grid-cols-2">
-          <StockingSummary result={stocking} />
-          <EquipmentRecommendation equipment={equipment} />
+        <div id="stoklama-detay" className="scroll-mt-24 pb-16">
+          <div className="grid gap-6 md:grid-cols-2">
+            <StockingSummary result={stocking} />
+            <EquipmentRecommendation equipment={equipment} />
+          </div>
+          <div className="mt-6">
+            <ShareResult
+              liters={liters}
+              selectedFish={selectedIds.map((id) => ({
+                name: species.find((f) => f.id === id)?.name ?? id,
+                count: selection[id],
+              }))}
+              stocking={stocking}
+              equipment={equipment}
+            />
+          </div>
         </div>
       )}
 
