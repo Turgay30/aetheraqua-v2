@@ -583,6 +583,31 @@ $$ language plpgsql security definer;
 
 grant execute on function public.increment_coupon_usage(text) to anon, authenticated;
 
+-- Bazı tablolarda temel erişim izni (GRANT) otomatik atanmamış olabilir —
+-- RLS politikaları buna rağmen çalışmadığında bu satırlar gerekli.
+grant select, insert, update, delete on public.coupons to authenticated;
+grant select on public.coupons to anon;
+grant select, insert, update, delete on public.products to authenticated;
+grant select on public.products to anon;
+grant select, insert, update, delete on public.fish_species to authenticated;
+grant select on public.fish_species to anon;
+grant select, insert, update, delete on public.fish_compatibility to authenticated;
+grant select on public.fish_compatibility to anon;
+grant select, insert, update, delete on public.stock to authenticated;
+grant select on public.stock to anon;
+grant select, insert, update, delete on public.orders to authenticated;
+grant insert on public.orders to anon;
+grant select, insert, update, delete on public.order_items to authenticated;
+grant insert on public.order_items to anon;
+grant select, insert, update, delete on public.reviews to authenticated;
+grant select on public.reviews to anon;
+grant select, insert, update, delete on public.addresses to authenticated;
+grant select, insert, update, delete on public.favorites to authenticated;
+grant select, insert, update, delete on public.profiles to authenticated;
+grant select on public.audit_logs to authenticated;
+
+NOTIFY pgrst, 'reload schema';
+
 -- ============================================
 -- 17. ERİŞİM İZİNLERİ (GRANT) — "permission denied" hatasını önler
 -- ============================================
