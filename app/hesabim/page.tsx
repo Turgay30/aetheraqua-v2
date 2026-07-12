@@ -14,6 +14,7 @@ import ProfileEditor from "@/components/account/ProfileEditor";
 import PasswordChangeForm from "@/components/account/PasswordChangeForm";
 import DeleteAccountButton from "@/components/account/DeleteAccountButton";
 import OrderStatusTimeline from "@/components/account/OrderStatusTimeline";
+import Skeleton from "@/components/Skeleton";
 import Image from "next/image";
 import { buildTrackingUrl } from "@/lib/shipping";
 
@@ -104,7 +105,24 @@ export default function HesabimPage() {
         </h2>
 
         {ordersLoading ? (
-          <p className="mt-4 font-body text-sm text-ink-muted">Yükleniyor...</p>
+          <div className="mt-4 space-y-4">
+            {[0, 1].map((i) => (
+              <div key={i} className="rounded-2xl border border-abyss-border bg-abyss-surface p-5">
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-20" />
+                </div>
+                <Skeleton className="mt-4 h-6 w-full" />
+                <div className="mt-4 flex gap-3 border-t border-abyss-border pt-4">
+                  <Skeleton className="h-14 w-14 flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-1/2" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         ) : !orders || orders.length === 0 ? (
           <div className="mt-4 rounded-2xl border border-abyss-border bg-abyss-surface p-8 text-center">
             <p className="font-body text-sm text-ink-muted">Henüz siparişiniz yok.</p>

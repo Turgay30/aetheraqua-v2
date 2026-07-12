@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import Skeleton from "@/components/Skeleton";
 import { FishSpecies } from "@/lib/fish-data";
 import { LivestockType, CompatibilityKey, key as ckey } from "@/lib/livestock";
 import { assessStocking, recommendEquipment } from "@/lib/aquarium-calc";
@@ -149,8 +150,18 @@ export default function AquariumAssistant() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-6xl px-6 pb-24 text-center">
-        <p className="font-body text-sm text-ink-muted">Yükleniyor...</p>
+      <div className="mx-auto max-w-6xl px-6 pb-24">
+        <div className="mb-10 flex flex-wrap gap-2">
+          {[0, 1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-9 w-32 rounded-full" />
+          ))}
+        </div>
+        <Skeleton className="mb-12 h-40 w-full rounded-2xl" />
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <Skeleton key={i} className="aspect-square w-full rounded-xl" />
+          ))}
+        </div>
       </div>
     );
   }

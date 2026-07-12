@@ -6,6 +6,7 @@ import DecorativeGlow from "@/components/DecorativeGlow";
 import LightBeam from "@/components/LightBeam";
 import GhostBackground from "@/components/GhostBackground";
 import MoreProducts from "@/components/MoreProducts";
+import SocialProofBadge from "@/components/SocialProofBadge";
 
 export default function Home() {
   return (
@@ -44,6 +45,8 @@ export default function Home() {
               Helios&apos;u Keşfet
             </Link>
           </div>
+
+          <SocialProofBadge />
         </section>
       </div>
 
