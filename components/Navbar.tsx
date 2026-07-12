@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useCart } from "@/components/cart/CartProvider";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 const links = [
   { href: "/apollo", label: "Apollo" },
@@ -14,6 +15,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const { totalItems } = useCart();
+  const { user } = useAuth();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -62,6 +64,15 @@ export default function Navbar() {
 
         <div className="flex items-center gap-2">
           <Link
+            href={user ? "/hesabim" : "/giris"}
+            aria-label="Hesabım"
+            onClick={() => setMenuOpen(false)}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-abyss-border text-ink-muted transition-colors hover:border-aqua hover:text-aqua"
+          >
+            <UserIcon />
+          </Link>
+
+          <Link
             href="/sepet"
             aria-label="Sepet"
             onClick={() => setMenuOpen(false)}
@@ -104,6 +115,15 @@ export default function Navbar() {
               </Link>
             </li>
           ))}
+          <li>
+            <Link
+              href={user ? "/hesabim" : "/giris"}
+              onClick={() => setMenuOpen(false)}
+              className="block rounded-lg px-3 py-3 font-body text-base text-ink-muted transition-colors hover:bg-abyss-surface hover:text-ink"
+            >
+              {user ? "Hesabım" : "Giriş Yap"}
+            </Link>
+          </li>
         </ul>
       </div>
     </header>
@@ -143,6 +163,20 @@ function CartIcon() {
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path
         d="M3 3h2l.4 2M7 13h10l3-8H5.4M7 13L5.4 5M7 13l-1.5 5h11M10 21a1 1 0 100-2 1 1 0 000 2zM17 21a1 1 0 100-2 1 1 0 000 2z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function UserIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M12 12a4 4 0 100-8 4 4 0 000 8zM4 21c0-4 3.5-7 8-7s8 3 8 7"
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="round"

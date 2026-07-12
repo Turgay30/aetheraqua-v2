@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/components/cart/CartProvider";
 import { formatTL } from "@/lib/pricing";
 import { trackPurchase } from "@/lib/analytics";
+import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 type Step = "form" | "summary" | "confirmed";
 
@@ -28,6 +30,7 @@ const LEGAL_TEXT_VERSION = "2026-07-v1";
 
 export default function OdemeContent() {
   const { lines, subtotal, totalPrice, coupon, couponDiscount, clear, isLoaded } = useCart();
+  const { user } = useAuth();
   const [step, setStep] = useState<Step>("form");
   const [form, setForm] = useState<OrderForm>({
     name: "",
@@ -42,6 +45,17 @@ export default function OdemeContent() {
   });
   const [orderNo, setOrderNo] = useState("");
   const [consentAccepted, setConsentAccepted] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    setForm((prev) => ({
+      ...prev,
+      name: prev.name || (user.user_metadata?.full_name as string) || "",
+      email: prev.email || user.email || "",
+    }));
+  }, [user]);
 
   if (!isLoaded) return null;
 
@@ -67,18 +81,64 @@ export default function OdemeContent() {
     setStep("summary");
   }
 
-  function handleConfirm() {
-    // NOT: Gerçek ödeme tahsilatı (iyzico/PayTR) ve sipariş kaydı
-    // (Supabase) burada devreye girecek. Şimdilik sipariş simüle ediliyor.
+  async function handleConfirm() {
+    setSaving(true);
+    setSaveError(null);
+
     const generatedOrderNo = `AA-${Date.now().toString().slice(-8)}`;
+    const supabase = createClient();
 
-    // Veritabanı bağlandığında siparişle birlikte kaydedilecek onay bilgisi:
-    const consentRecord = {
-      legalTextVersion: LEGAL_TEXT_VERSION,
-      acceptedAt: new Date().toISOString(),
-    };
-    void consentRecord; // şimdilik sadece hazırlanıyor, henüz kaydedilmiyor
+    const { data: insertedOrder, error: orderError } = await supabase
+      .from("orders")
+      .insert({
+        order_no: generatedOrderNo,
+        user_id: user?.id ?? null,
+        customer_name: form.name,
+        customer_phone: form.phone,
+        customer_email: form.email,
+        customer_address: form.address,
+        invoice_type: form.invoiceType,
+        tckn: form.invoiceType === "bireysel" ? form.tckn : null,
+        company_name: form.invoiceType === "kurumsal" ? form.companyName : null,
+        tax_office: form.invoiceType === "kurumsal" ? form.taxOffice : null,
+        tax_number: form.invoiceType === "kurumsal" ? form.taxNumber : null,
+        subtotal,
+        coupon_code: coupon?.code ?? null,
+        coupon_discount: couponDiscount,
+        total: totalPrice,
+        legal_text_version: LEGAL_TEXT_VERSION,
+        consent_accepted_at: new Date().toISOString(),
+      })
+      .select("id")
+      .single();
 
+    if (orderError || !insertedOrder) {
+      setSaving(false);
+      setSaveError("Sipariş kaydedilirken bir sorun oluştu. Lütfen tekrar deneyin.");
+      return;
+    }
+
+    const { error: itemsError } = await supabase.from("order_items").insert(
+      lines.map((line) => ({
+        order_id: insertedOrder.id,
+        product_id: line.productId,
+        product_name: line.productName,
+        size: line.size,
+        color_id: line.colorId,
+        color_label: line.colorLabel,
+        unit_price: line.unitPrice,
+        quantity: line.quantity,
+      }))
+    );
+
+    setSaving(false);
+
+    if (itemsError) {
+      setSaveError("Sipariş kalemleri kaydedilirken bir sorun oluştu.");
+      return;
+    }
+
+    // NOT: Gerçek ödeme tahsilatı (iyzico) burada devreye girecek.
     trackPurchase(generatedOrderNo, totalPrice, lines.length);
     setOrderNo(generatedOrderNo);
     clear();
@@ -255,19 +315,24 @@ export default function OdemeContent() {
             </span>
           </label>
 
+          {saveError && (
+            <p className="mt-3 font-body text-sm text-red-400">{saveError}</p>
+          )}
+
           <div className="mt-4 flex gap-3">
             <button
               onClick={() => setStep("form")}
-              className="flex-1 rounded-full border border-abyss-border py-3 font-body text-sm text-ink hover:border-aqua hover:text-aqua"
+              disabled={saving}
+              className="flex-1 rounded-full border border-abyss-border py-3 font-body text-sm text-ink hover:border-aqua hover:text-aqua disabled:opacity-40"
             >
               Bilgileri Düzenle
             </button>
             <button
               onClick={handleConfirm}
-              disabled={!consentAccepted}
+              disabled={!consentAccepted || saving}
               className="flex-1 rounded-full bg-gold py-3 font-body text-sm font-semibold text-abyss transition-transform hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
             >
-              Siparişi Onayla
+              {saving ? "Kaydediliyor..." : "Siparişi Onayla"}
             </button>
           </div>
         </div>
