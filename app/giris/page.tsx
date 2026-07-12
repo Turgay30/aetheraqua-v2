@@ -46,6 +46,12 @@ export default function GirisPage() {
           <Field label="E-posta" type="email" value={email} onChange={setEmail} required />
           <Field label="Şifre" type="password" value={password} onChange={setPassword} required />
 
+          <div className="text-right">
+            <Link href="/sifremi-unuttum" className="font-body text-xs text-ink-faint hover:text-aqua">
+              Şifremi unuttum
+            </Link>
+          </div>
+
           {error && <p className="font-body text-sm text-red-400">{error}</p>}
 
           <button
