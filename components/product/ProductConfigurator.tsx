@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   SIZES_CM,
   CASE_COLORS,
@@ -12,6 +12,8 @@ import {
 import { useCart } from "@/components/cart/CartProvider";
 import { trackAddToCart } from "@/lib/analytics";
 import { createClient } from "@/lib/supabase/client";
+import { useIsInView } from "@/lib/useIsInView";
+import MobileStickyBar from "@/components/product/MobileStickyBar";
 
 type Theme = "apollo" | "helios";
 
@@ -69,6 +71,8 @@ export default function ProductConfigurator({
   const [livePrice, setLivePrice] = useState<number>(basePrice);
   const { addLine } = useCart();
   const s = themeStyles[theme];
+  const addButtonRef = useRef<HTMLButtonElement>(null);
+  const buttonInView = useIsInView(addButtonRef as React.RefObject<HTMLElement>);
 
   // Fiyatı veritabanından çek — admin panelden güncellenmiş olabilir.
   // Bulunamazsa (henüz şema çalıştırılmadıysa) prop'taki varsayılana düşer.
@@ -208,6 +212,7 @@ export default function ProductConfigurator({
         )}
 
         <button
+          ref={addButtonRef}
           onClick={handleAddToCart}
           disabled={stockQty === 0}
           className={`mt-5 w-full rounded-full py-3.5 font-body text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${s.button}`}
@@ -219,6 +224,17 @@ export default function ProductConfigurator({
               : `${productName} ${size}cm — Sepete Ekle`}
         </button>
       </div>
+
+      <MobileStickyBar
+        visible={!buttonInView}
+        productName={productName}
+        size={size}
+        price={salePrice}
+        disabled={stockQty === 0}
+        justAdded={justAdded}
+        onAdd={handleAddToCart}
+        accentClass={s.button}
+      />
     </div>
   );
 }

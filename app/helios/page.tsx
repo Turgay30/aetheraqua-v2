@@ -44,7 +44,7 @@ export default function HeliosPage() {
   return (
     <div className="relative overflow-hidden bg-abyss bg-abyss-gradient">
       <GhostBackground opacity={0.08} />
-      <ViewItemTracker id="helios" name="Helios" price={4200} />
+      <ViewItemTracker id="helios" name="Helios" price={4200} image="/images/helios-hero.jpg" href="/helios" />
       <ProductJsonLd
         name="AetherAqua Helios"
         description="Ekonomik WRGB akvaryum aydınlatması — sabit 8.000K çıkış, manuel kademe, zamanlayıcı, CRI >92, IP65."

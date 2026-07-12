@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { hexToRgba } from "@/lib/color-utils";
+import { useIsInView } from "@/lib/useIsInView";
+import MobileStickyBar from "@/components/product/MobileStickyBar";
 import {
   SIZES_CM,
   CASE_COLORS,
@@ -14,6 +16,7 @@ import {
 } from "@/lib/pricing";
 import { useCart } from "@/components/cart/CartProvider";
 import { trackAddToCart, trackViewItem } from "@/lib/analytics";
+import { trackRecentlyViewed } from "@/lib/recentlyViewed";
 import { buildWhatsAppLink } from "@/lib/contact";
 import { useAuth } from "@/components/auth/AuthProvider";
 import FavoriteButton from "@/components/product/FavoriteButton";
@@ -41,6 +44,15 @@ export default function DynamicProductView({ product }: { product: DynamicProduc
 
   useEffect(() => {
     trackViewItem({ id: product.product_id, name: product.name, price: product.base_price });
+    if (product.images[0]) {
+      trackRecentlyViewed({
+        id: product.product_id,
+        name: product.name,
+        price: product.base_price,
+        image: product.images[0],
+        href: `/urun/${product.product_id}`,
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -218,6 +230,8 @@ function Configurator({ product, accent }: { product: DynamicProduct; accent: st
   const [stockQty, setStockQty] = useState<number | null>(null);
   const [livePrice, setLivePrice] = useState<number>(product.base_price);
   const { addLine } = useCart();
+  const addButtonRef = useRef<HTMLButtonElement>(null);
+  const buttonInView = useIsInView(addButtonRef as React.RefObject<HTMLElement>);
 
   useEffect(() => {
     const supabase = createClient();
@@ -330,6 +344,7 @@ function Configurator({ product, accent }: { product: DynamicProduct; accent: st
         )}
 
         <button
+          ref={addButtonRef}
           onClick={handleAddToCart}
           disabled={stockQty === 0}
           className="mt-5 w-full rounded-full py-3.5 font-body text-sm font-semibold text-abyss transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
@@ -338,6 +353,18 @@ function Configurator({ product, accent }: { product: DynamicProduct; accent: st
           {stockQty === 0 ? "Stokta Yok" : justAdded ? "Sepete Eklendi ✓" : `${product.name} ${size}cm — Sepete Ekle`}
         </button>
       </div>
+
+      <MobileStickyBar
+        visible={!buttonInView}
+        productName={product.name}
+        size={size}
+        price={salePrice}
+        disabled={stockQty === 0}
+        justAdded={justAdded}
+        onAdd={handleAddToCart}
+        accentClass="text-abyss"
+        accentStyle={{ backgroundColor: accent }}
+      />
     </div>
   );
 }

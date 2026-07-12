@@ -44,7 +44,7 @@ export default function ApolloPage() {
   return (
     <div className="relative overflow-hidden bg-abyss bg-abyss-gradient">
       <GhostBackground opacity={0.08} />
-      <ViewItemTracker id="apollo" name="Apollo" price={7500} />
+      <ViewItemTracker id="apollo" name="Apollo" price={7500} image="/images/apollo-hero.jpg" href="/apollo" />
       <ProductJsonLd
         name="AetherAqua Apollo"
         description="Profesyonel WRGB akvaryum aydınlatması — 6.500K–18.000K ayarlanabilir renk sıcaklığı, Wi-Fi kontrol, CRI >98, IP67."

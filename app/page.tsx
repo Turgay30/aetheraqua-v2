@@ -7,6 +7,7 @@ import LightBeam from "@/components/LightBeam";
 import GhostBackground from "@/components/GhostBackground";
 import MoreProducts from "@/components/MoreProducts";
 import SocialProofBadge from "@/components/SocialProofBadge";
+import RecentlyViewed from "@/components/RecentlyViewed";
 
 export default function Home() {
   return (
@@ -86,6 +87,8 @@ export default function Home() {
       </section>
 
       <MoreProducts />
+
+      <RecentlyViewed />
 
       {/* Akvaryum Asistanı */}
       <section className="px-6 pb-24">
