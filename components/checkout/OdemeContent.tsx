@@ -144,6 +144,7 @@ export default function OdemeContent() {
         color_label: line.colorLabel,
         unit_price: line.unitPrice,
         quantity: line.quantity,
+        image_url: line.image || null,
       }))
     );
 

@@ -789,3 +789,19 @@ alter default privileges in schema public
   grant select on tables to anon;
 
 NOTIFY pgrst, 'reload schema';
+
+-- ============================================
+-- 23. ESKİ KISITLAMALARI KALDIR
+-- (stock, order_items, favorites, reviews, products tabloları eskiden
+--  product_id'yi sadece 'apollo'/'helios' ile sınırlıyordu — artık şablonla
+--  eklenen ürünler de olduğu için bu kısıtlamayı kaldırıyoruz)
+-- ============================================
+alter table public.stock drop constraint if exists stock_product_id_check;
+alter table public.order_items drop constraint if exists order_items_product_id_check;
+alter table public.favorites drop constraint if exists favorites_product_id_check;
+alter table public.reviews drop constraint if exists reviews_product_id_check;
+alter table public.products drop constraint if exists products_product_id_check;
+
+alter table public.order_items add column if not exists image_url text;
+
+NOTIFY pgrst, 'reload schema';

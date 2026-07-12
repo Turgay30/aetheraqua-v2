@@ -11,6 +11,10 @@ import AddressBook from "@/components/account/AddressBook";
 import FavoritesList from "@/components/account/FavoritesList";
 import MarketingConsentToggle from "@/components/account/MarketingConsentToggle";
 import ProfileEditor from "@/components/account/ProfileEditor";
+import PasswordChangeForm from "@/components/account/PasswordChangeForm";
+import DeleteAccountButton from "@/components/account/DeleteAccountButton";
+import OrderStatusTimeline from "@/components/account/OrderStatusTimeline";
+import Image from "next/image";
 import { buildTrackingUrl } from "@/lib/shipping";
 
 type OrderItem = {
@@ -20,6 +24,7 @@ type OrderItem = {
   color_label: string;
   unit_price: number;
   quantity: number;
+  image_url: string | null;
 };
 
 type Order = {
@@ -31,15 +36,6 @@ type Order = {
   tracking_number: string | null;
   shipping_company: string | null;
   order_items: OrderItem[];
-};
-
-const statusLabels: Record<string, { label: string; color: string }> = {
-  beklemede: { label: "Beklemede", color: "text-ink-muted" },
-  onaylandı: { label: "Onaylandı", color: "text-aqua" },
-  hazırlanıyor: { label: "Hazırlanıyor", color: "text-gold" },
-  kargoya_verildi: { label: "Kargoya Verildi", color: "text-aqua" },
-  teslim_edildi: { label: "Teslim Edildi", color: "text-emerald-400" },
-  iptal: { label: "İptal", color: "text-red-400" },
 };
 
 export default function HesabimPage() {
@@ -59,7 +55,7 @@ export default function HesabimPage() {
     const supabase = createClient();
     supabase
       .from("orders")
-      .select("id, order_no, status, total, created_at, tracking_number, shipping_company, order_items(id, product_name, size, color_label, unit_price, quantity)")
+      .select("id, order_no, status, total, created_at, tracking_number, shipping_company, order_items(id, product_name, size, color_label, unit_price, quantity, image_url)")
       .order("created_at", { ascending: false })
       .then(({ data }) => {
         setOrders((data as unknown as Order[]) ?? []);
@@ -96,6 +92,13 @@ export default function HesabimPage() {
           <ProfileEditor userId={user.id} />
         </div>
 
+        <div className="mt-8">
+          <h2 className="mb-4 font-mono text-[11px] uppercase tracking-[0.25em] text-ink-faint">
+            Şifre Değiştir
+          </h2>
+          <PasswordChangeForm email={user.email!} />
+        </div>
+
         <h2 className="mt-10 font-mono text-[11px] uppercase tracking-[0.25em] text-ink-faint">
           Siparişlerim
         </h2>
@@ -115,26 +118,36 @@ export default function HesabimPage() {
         ) : (
           <div className="mt-4 space-y-4">
             {orders.map((order) => {
-              const s = statusLabels[order.status] ?? statusLabels.beklemede;
               return (
                 <div key={order.id} className="rounded-2xl border border-abyss-border bg-abyss-surface p-5">
                   <div className="flex items-center justify-between">
                     <p className="font-mono text-xs text-aqua">{order.order_no}</p>
-                    <span className={`font-body text-xs font-semibold ${s.color}`}>{s.label}</span>
+                    <p className="font-body text-xs text-ink-faint">
+                      {new Date(order.created_at).toLocaleDateString("tr-TR", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </p>
                   </div>
-                  <p className="mt-1 font-body text-xs text-ink-faint">
-                    {new Date(order.created_at).toLocaleDateString("tr-TR", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    })}
-                  </p>
 
-                  <div className="mt-3 space-y-1 border-t border-abyss-border pt-3">
+                  <div className="mt-4">
+                    <OrderStatusTimeline status={order.status} />
+                  </div>
+
+                  <div className="mt-4 space-y-3 border-t border-abyss-border pt-4">
                     {order.order_items?.map((item) => (
-                      <p key={item.id} className="font-body text-sm text-ink-muted">
-                        {item.product_name} {item.size}cm ({item.color_label}) × {item.quantity}
-                      </p>
+                      <div key={item.id} className="flex items-center gap-3">
+                        <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg border border-abyss-border bg-abyss">
+                          {item.image_url && (
+                            <Image src={item.image_url} alt={item.product_name} fill className="object-cover" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-body text-sm text-ink">{item.product_name} {item.size}cm</p>
+                          <p className="font-body text-xs text-ink-faint">{item.color_label} · {item.quantity} adet</p>
+                        </div>
+                      </div>
                     ))}
                   </div>
 
@@ -180,6 +193,10 @@ export default function HesabimPage() {
             Gizlilik Tercihleri
           </h2>
           <MarketingConsentToggle userId={user.id} />
+        </div>
+
+        <div className="mt-16 border-t border-abyss-border pt-8 text-center">
+          <DeleteAccountButton />
         </div>
       </section>
     </div>

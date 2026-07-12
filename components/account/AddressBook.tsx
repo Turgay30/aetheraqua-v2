@@ -132,21 +132,34 @@ export default function AddressBook({ userId }: { userId: string }) {
           {addresses.map((addr) => (
             <div
               key={addr.id}
-              className="flex items-start justify-between gap-4 rounded-2xl border border-abyss-border bg-abyss-surface p-4"
+              className={`flex items-start justify-between gap-4 rounded-2xl border p-4 transition-colors ${
+                addr.is_default
+                  ? "border-gold/40 bg-gold/[0.04]"
+                  : "border-abyss-border bg-abyss-surface"
+              }`}
             >
-              <div>
-                <div className="flex items-center gap-2">
-                  <p className="font-body text-sm font-semibold text-ink">{addr.label}</p>
-                  {addr.is_default && (
-                    <span className="rounded-full bg-aqua/10 px-2 py-0.5 font-mono text-[10px] text-aqua">
-                      Varsayılan
-                    </span>
-                  )}
+              <div className="flex gap-3">
+                <div
+                  className={`mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full ${
+                    addr.is_default ? "bg-gold/15 text-gold" : "bg-abyss text-ink-faint"
+                  }`}
+                >
+                  <PinIcon />
                 </div>
-                <p className="mt-1 font-body text-xs text-ink-muted">
-                  {addr.recipient_name} · {addr.phone}
-                </p>
-                <p className="mt-0.5 font-body text-xs text-ink-faint">{addr.address_text}</p>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="font-body text-sm font-semibold text-ink">{addr.label}</p>
+                    {addr.is_default && (
+                      <span className="rounded-full bg-gold/15 px-2 py-0.5 font-mono text-[10px] font-semibold text-gold">
+                        Varsayılan
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-1 font-body text-xs text-ink-muted">
+                    {addr.recipient_name} · {addr.phone}
+                  </p>
+                  <p className="mt-0.5 font-body text-xs text-ink-faint">{addr.address_text}</p>
+                </div>
               </div>
               <div className="flex flex-shrink-0 flex-col gap-1.5 text-right">
                 {!addr.is_default && (
@@ -169,5 +182,19 @@ export default function AddressBook({ userId }: { userId: string }) {
         </div>
       )}
     </div>
+  );
+}
+
+function PinIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M12 21s-7-6.5-7-11.5A7 7 0 0112 2a7 7 0 017 7.5C19 14.5 12 21 12 21z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <circle cx="12" cy="9.5" r="2.4" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
   );
 }
