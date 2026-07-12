@@ -1,6 +1,6 @@
 -- AetherAqua — Veritabanı Şeması (v1)
 -- Bu dosyayı Supabase Dashboard → SQL Editor → New query içine yapıştırıp
--- "Run" ile çalıştırın.
+-- "Run" ile çalıştırın. Güvenle birden fazla kez çalıştırılabilir.
 
 -- ============================================
 -- 1. STOK TABLOSU
@@ -15,7 +15,7 @@ create table if not exists public.stock (
 
 alter table public.stock enable row level security;
 
--- Herkes stok durumunu görebilir (ürün sayfasında göstermek için)
+drop policy if exists "Stok herkese açık okunabilir" on public.stock;
 create policy "Stok herkese açık okunabilir"
   on public.stock for select
   to anon, authenticated
@@ -65,13 +65,13 @@ create table if not exists public.orders (
 
 alter table public.orders enable row level security;
 
--- Giriş yapmış kullanıcı sadece kendi siparişlerini görebilir
+drop policy if exists "Kullanıcı kendi siparişlerini görebilir" on public.orders;
 create policy "Kullanıcı kendi siparişlerini görebilir"
   on public.orders for select
   to authenticated
   using (auth.uid() = user_id);
 
--- Hem misafir hem üye sipariş oluşturabilir
+drop policy if exists "Herkes sipariş oluşturabilir" on public.orders;
 create policy "Herkes sipariş oluşturabilir"
   on public.orders for insert
   to anon, authenticated
@@ -95,6 +95,7 @@ create table if not exists public.order_items (
 
 alter table public.order_items enable row level security;
 
+drop policy if exists "Kullanıcı kendi sipariş kalemlerini görebilir" on public.order_items;
 create policy "Kullanıcı kendi sipariş kalemlerini görebilir"
   on public.order_items for select
   to authenticated
@@ -106,6 +107,7 @@ create policy "Kullanıcı kendi sipariş kalemlerini görebilir"
     )
   );
 
+drop policy if exists "Herkes sipariş kalemi oluşturabilir" on public.order_items;
 create policy "Herkes sipariş kalemi oluşturabilir"
   on public.order_items for insert
   to anon, authenticated
@@ -124,16 +126,19 @@ create table if not exists public.profiles (
 
 alter table public.profiles enable row level security;
 
+drop policy if exists "Kullanıcı kendi profilini görebilir" on public.profiles;
 create policy "Kullanıcı kendi profilini görebilir"
   on public.profiles for select
   to authenticated
   using (auth.uid() = id);
 
+drop policy if exists "Kullanıcı kendi profilini güncelleyebilir" on public.profiles;
 create policy "Kullanıcı kendi profilini güncelleyebilir"
   on public.profiles for update
   to authenticated
   using (auth.uid() = id);
 
+drop policy if exists "Kullanıcı kendi profilini oluşturabilir" on public.profiles;
 create policy "Kullanıcı kendi profilini oluşturabilir"
   on public.profiles for insert
   to authenticated
