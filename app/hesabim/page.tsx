@@ -10,6 +10,7 @@ import DecorativeGlow from "@/components/DecorativeGlow";
 import AddressBook from "@/components/account/AddressBook";
 import FavoritesList from "@/components/account/FavoritesList";
 import MarketingConsentToggle from "@/components/account/MarketingConsentToggle";
+import { buildTrackingUrl } from "@/lib/shipping";
 
 type OrderItem = {
   id: string;
@@ -26,6 +27,8 @@ type Order = {
   status: string;
   total: number;
   created_at: string;
+  tracking_number: string | null;
+  shipping_company: string | null;
   order_items: OrderItem[];
 };
 
@@ -55,7 +58,7 @@ export default function HesabimPage() {
     const supabase = createClient();
     supabase
       .from("orders")
-      .select("id, order_no, status, total, created_at, order_items(id, product_name, size, color_label, unit_price, quantity)")
+      .select("id, order_no, status, total, created_at, tracking_number, shipping_company, order_items(id, product_name, size, color_label, unit_price, quantity)")
       .order("created_at", { ascending: false })
       .then(({ data }) => {
         setOrders((data as unknown as Order[]) ?? []);
@@ -130,6 +133,25 @@ export default function HesabimPage() {
                   <p className="mt-3 text-right font-display text-lg text-gold">
                     {formatTL(order.total)}
                   </p>
+
+                  {order.tracking_number && (
+                    <div className="mt-3 border-t border-abyss-border pt-3">
+                      {buildTrackingUrl(order.shipping_company, order.tracking_number) ? (
+                        <a
+                          href={buildTrackingUrl(order.shipping_company, order.tracking_number)!}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 font-body text-xs text-aqua hover:underline"
+                        >
+                          {order.shipping_company} ile takip et → {order.tracking_number}
+                        </a>
+                      ) : (
+                        <p className="font-body text-xs text-ink-muted">
+                          {order.shipping_company}: {order.tracking_number}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}

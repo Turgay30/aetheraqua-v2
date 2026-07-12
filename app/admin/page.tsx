@@ -12,6 +12,7 @@ import CouponManager from "@/components/admin/CouponManager";
 import BlogManager from "@/components/admin/BlogManager";
 import SalesSummary from "@/components/admin/SalesSummary";
 import PlantManager from "@/components/admin/PlantManager";
+import TrackingEditor from "@/components/admin/TrackingEditor";
 
 const ADMIN_EMAIL = "turgayturan705@gmail.com";
 
@@ -42,6 +43,8 @@ type Order = {
   customer_email: string;
   customer_address: string;
   created_at: string;
+  tracking_number: string | null;
+  shipping_company: string | null;
   order_items: OrderItem[];
 };
 
@@ -66,7 +69,7 @@ export default function AdminPage() {
     const { data } = await supabase
       .from("orders")
       .select(
-        "id, order_no, status, total, customer_name, customer_phone, customer_email, customer_address, created_at, order_items(id, product_name, size, color_label, quantity)"
+        "id, order_no, status, total, customer_name, customer_phone, customer_email, customer_address, created_at, tracking_number, shipping_company, order_items(id, product_name, size, color_label, quantity)"
       )
       .order("created_at", { ascending: false });
     setOrders((data as unknown as Order[]) ?? []);
@@ -76,6 +79,22 @@ export default function AdminPage() {
     const supabase = createClient();
     await supabase.from("orders").update({ status }).eq("id", orderId);
     setOrders((prev) => prev?.map((o) => (o.id === orderId ? { ...o, status } : o)) ?? null);
+  }
+
+  async function updateTracking(orderId: string, company: string, trackingNumber: string) {
+    const supabase = createClient();
+    await supabase
+      .from("orders")
+      .update({ shipping_company: company || null, tracking_number: trackingNumber || null })
+      .eq("id", orderId);
+    setOrders(
+      (prev) =>
+        prev?.map((o) =>
+          o.id === orderId
+            ? { ...o, shipping_company: company || null, tracking_number: trackingNumber || null }
+            : o
+        ) ?? null
+    );
   }
 
   if (isLoading || !user || user.email !== ADMIN_EMAIL) return null;
@@ -182,6 +201,13 @@ export default function AdminPage() {
                 </div>
 
                 <p className="mt-3 text-right font-display text-lg text-gold">{formatTL(order.total)}</p>
+
+                <TrackingEditor
+                  orderId={order.id}
+                  initialCompany={order.shipping_company}
+                  initialTrackingNumber={order.tracking_number}
+                  onSave={updateTracking}
+                />
               </div>
             ))}
           </div>

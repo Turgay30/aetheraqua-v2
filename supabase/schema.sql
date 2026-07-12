@@ -669,7 +669,11 @@ create policy "Admin bitki yönetebilir"
 grant select, insert, update, delete on public.plants to authenticated;
 grant select on public.plants to anon;
 
-NOTIFY pgrst, 'reload schema';
+-- ============================================
+-- 20. KARGO TAKİP BİLGİSİ
+-- ============================================
+alter table public.orders add column if not exists tracking_number text;
+alter table public.orders add column if not exists shipping_company text;
 
 -- ============================================
 -- 17. ERİŞİM İZİNLERİ (GRANT) — "permission denied" hatasını önler
@@ -712,3 +716,5 @@ alter default privileges in schema public
   grant select, insert, update, delete on tables to authenticated;
 alter default privileges in schema public
   grant select on tables to anon;
+
+NOTIFY pgrst, 'reload schema';
