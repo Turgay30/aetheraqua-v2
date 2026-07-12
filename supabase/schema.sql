@@ -606,6 +606,38 @@ grant select, insert, update, delete on public.favorites to authenticated;
 grant select, insert, update, delete on public.profiles to authenticated;
 grant select on public.audit_logs to authenticated;
 
+-- ============================================
+-- 18. BLOG / İÇERİK ALANI
+-- ============================================
+create table if not exists public.blog_posts (
+  id uuid primary key default gen_random_uuid(),
+  slug text not null unique,
+  title text not null,
+  excerpt text not null default '',
+  content text not null default '',
+  cover_image text,
+  published boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+alter table public.blog_posts enable row level security;
+
+drop policy if exists "Yayınlanan yazılar herkese açık" on public.blog_posts;
+create policy "Yayınlanan yazılar herkese açık"
+  on public.blog_posts for select
+  to anon, authenticated
+  using (published = true);
+
+drop policy if exists "Admin yazı yönetebilir" on public.blog_posts;
+create policy "Admin yazı yönetebilir"
+  on public.blog_posts for all
+  to authenticated
+  using (auth.jwt() ->> 'email' = 'turgayturan705@gmail.com')
+  with check (auth.jwt() ->> 'email' = 'turgayturan705@gmail.com');
+
+grant select, insert, update, delete on public.blog_posts to authenticated;
+grant select on public.blog_posts to anon;
+
 NOTIFY pgrst, 'reload schema';
 
 -- ============================================

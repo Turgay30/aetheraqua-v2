@@ -9,6 +9,7 @@ import ProductStockManager from "@/components/admin/ProductStockManager";
 import ProductManager from "@/components/admin/ProductManager";
 import FishManager from "@/components/admin/FishManager";
 import CouponManager from "@/components/admin/CouponManager";
+import BlogManager from "@/components/admin/BlogManager";
 
 const ADMIN_EMAIL = "turgayturan705@gmail.com";
 
@@ -46,7 +47,7 @@ export default function AdminPage() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
   const [orders, setOrders] = useState<Order[] | null>(null);
-  const [tab, setTab] = useState<"orders" | "products" | "fish" | "coupons">("orders");
+  const [tab, setTab] = useState<"orders" | "products" | "fish" | "coupons" | "blog">("orders");
 
   useEffect(() => {
     if (isLoading) return;
@@ -114,6 +115,14 @@ export default function AdminPage() {
         >
           Kuponlar
         </button>
+        <button
+          onClick={() => setTab("blog")}
+          className={`rounded-full px-5 py-2 font-body text-sm transition-colors ${
+            tab === "blog" ? "bg-gold text-abyss" : "border border-abyss-border text-ink-muted"
+          }`}
+        >
+          Blog
+        </button>
       </div>
 
       {tab === "orders" ? (
@@ -173,9 +182,13 @@ export default function AdminPage() {
         <div className="mt-8">
           <FishManager />
         </div>
-      ) : (
+      ) : tab === "coupons" ? (
         <div className="mt-8">
           <CouponManager />
+        </div>
+      ) : (
+        <div className="mt-8">
+          <BlogManager />
         </div>
       )}
     </div>

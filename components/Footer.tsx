@@ -13,6 +13,7 @@ const columns = [
     title: "Kurumsal",
     links: [
       { href: "/hakkimizda", label: "Hakkımızda" },
+      { href: "/blog", label: "Blog" },
       { href: "/iletisim", label: "İletişim" },
       { href: "/sepet", label: "Sepet" },
     ],

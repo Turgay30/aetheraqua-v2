@@ -9,6 +9,7 @@ const links = [
   { href: "/apollo", label: "Apollo" },
   { href: "/helios", label: "Helios" },
   { href: "/akvaryum-asistani", label: "Akvaryum Asistanı" },
+  { href: "/blog", label: "Blog" },
 ];
 
 export default function Navbar() {

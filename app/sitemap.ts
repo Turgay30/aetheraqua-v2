@@ -1,21 +1,53 @@
 import type { MetadataRoute } from "next";
+import { createClient } from "@/lib/supabase/server";
 
-const routes = [
+const staticRoutes = [
   "",
   "/apollo",
   "/helios",
   "/akvaryum-asistani",
   "/hakkimizda",
   "/iletisim",
+  "/blog",
   "/gizlilik-politikasi",
   "/mesafeli-satis-sozlesmesi",
   "/kullanim-sartlari",
 ];
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://aetheraqua.com";
-  return routes.map((route) => ({
+
+  const entries: MetadataRoute.Sitemap = staticRoutes.map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
   }));
+
+  try {
+    const supabase = await createClient();
+
+    const { data: posts } = await supabase
+      .from("blog_posts")
+      .select("slug, created_at")
+      .eq("published", true);
+
+    posts?.forEach((post) => {
+      entries.push({
+        url: `${baseUrl}/blog/${post.slug}`,
+        lastModified: new Date(post.created_at),
+      });
+    });
+
+    const { data: products } = await supabase
+      .from("products")
+      .select("product_id")
+      .eq("is_builtin", false);
+
+    products?.forEach((p) => {
+      entries.push({ url: `${baseUrl}/urun/${p.product_id}`, lastModified: new Date() });
+    });
+  } catch {
+    // Veritabanına erişilemezse sadece statik rotalarla devam et
+  }
+
+  return entries;
 }
