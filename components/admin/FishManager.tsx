@@ -10,6 +10,7 @@ export default function FishManager() {
   const [species, setSpecies] = useState<FishSpecies[]>([]);
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [incompatibleWith, setIncompatibleWith] = useState<Set<string>>(new Set());
@@ -46,6 +47,38 @@ export default function FishManager() {
     loadSpecies();
   }, []);
 
+  function startEdit(fish: FishSpecies) {
+    setEditingId(fish.id);
+    setForm({
+      id: fish.id,
+      name: fish.name,
+      latinName: fish.latinName,
+      note: fish.note,
+      minShoalSize: String(fish.minShoalSize),
+      minTankLiters: String(fish.minTankLiters),
+      adultSizeCm: String(fish.adultSizeCm),
+    });
+    setFile(null);
+    setFormOpen(true);
+
+    const supabase = createClient();
+    supabase
+      .from("fish_compatibility")
+      .select("fish_b")
+      .eq("fish_a", fish.id)
+      .then(({ data }) => {
+        setIncompatibleWith(new Set((data ?? []).map((r) => r.fish_b)));
+      });
+  }
+
+  function cancelForm() {
+    setFormOpen(false);
+    setEditingId(null);
+    setFile(null);
+    setIncompatibleWith(new Set());
+    setForm({ id: "", name: "", latinName: "", note: "", minShoalSize: "6", minTankLiters: "45", adultSizeCm: "5" });
+  }
+
   function toggleIncompatible(id: string) {
     setIncompatibleWith((prev) => {
       const next = new Set(prev);
@@ -68,55 +101,87 @@ export default function FishManager() {
       .replace(/^_+|_+$/g, "");
   }
 
-  async function handleAdd(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!file) {
+    const isEdit = !!editingId;
+
+    if (!isEdit && !file) {
       alert("Lütfen bir görsel seçin.");
       return;
     }
     setSaving(true);
 
-    const imageUrl = await uploadImage(file, "fish");
-    if (!imageUrl) {
-      setSaving(false);
-      alert("Görsel yüklenemedi, tekrar deneyin.");
-      return;
-    }
-
-    const id = slugify(form.name);
     const supabase = createClient();
+    let imageUrl: string | null = null;
 
-    const { error: insertError } = await supabase.from("fish_species").insert({
-      id,
-      name: form.name,
-      latin_name: form.latinName,
-      image_url: imageUrl,
-      note: form.note,
-      min_shoal_size: Number(form.minShoalSize),
-      min_tank_liters: Number(form.minTankLiters),
-      adult_size_cm: Number(form.adultSizeCm),
-    });
-
-    if (insertError) {
-      setSaving(false);
-      alert("Balık eklenirken bir sorun oluştu: " + insertError.message);
-      return;
+    if (file) {
+      imageUrl = await uploadImage(file, "fish");
+      if (!imageUrl) {
+        setSaving(false);
+        alert("Görsel yüklenemedi, tekrar deneyin.");
+        return;
+      }
     }
 
-    // Uyumsuzluk ilişkilerini iki yönde de kaydet
-    if (incompatibleWith.size > 0) {
-      const rows = Array.from(incompatibleWith).flatMap((otherId) => [
-        { fish_a: id, fish_b: otherId, compatible: false },
-        { fish_a: otherId, fish_b: id, compatible: false },
-      ]);
-      await supabase.from("fish_compatibility").insert(rows);
+    const id = isEdit ? editingId! : slugify(form.name);
+
+    if (isEdit) {
+      const updatePayload: Record<string, unknown> = {
+        name: form.name,
+        latin_name: form.latinName,
+        note: form.note,
+        min_shoal_size: Number(form.minShoalSize),
+        min_tank_liters: Number(form.minTankLiters),
+        adult_size_cm: Number(form.adultSizeCm),
+      };
+      if (imageUrl) updatePayload.image_url = imageUrl;
+
+      const { error: updateError } = await supabase.from("fish_species").update(updatePayload).eq("id", id);
+      if (updateError) {
+        setSaving(false);
+        alert("Güncellenirken bir sorun oluştu: " + updateError.message);
+        return;
+      }
+
+      // Uyumsuzluk ilişkilerini sıfırlayıp yeniden yaz
+      await supabase.from("fish_compatibility").delete().eq("fish_a", id);
+      await supabase.from("fish_compatibility").delete().eq("fish_b", id);
+      if (incompatibleWith.size > 0) {
+        const rows = Array.from(incompatibleWith).flatMap((otherId) => [
+          { fish_a: id, fish_b: otherId, compatible: false },
+          { fish_a: otherId, fish_b: id, compatible: false },
+        ]);
+        await supabase.from("fish_compatibility").insert(rows);
+      }
+    } else {
+      const { error: insertError } = await supabase.from("fish_species").insert({
+        id,
+        name: form.name,
+        latin_name: form.latinName,
+        image_url: imageUrl,
+        note: form.note,
+        min_shoal_size: Number(form.minShoalSize),
+        min_tank_liters: Number(form.minTankLiters),
+        adult_size_cm: Number(form.adultSizeCm),
+      });
+
+      if (insertError) {
+        setSaving(false);
+        alert("Balık eklenirken bir sorun oluştu: " + insertError.message);
+        return;
+      }
+
+      if (incompatibleWith.size > 0) {
+        const rows = Array.from(incompatibleWith).flatMap((otherId) => [
+          { fish_a: id, fish_b: otherId, compatible: false },
+          { fish_a: otherId, fish_b: id, compatible: false },
+        ]);
+        await supabase.from("fish_compatibility").insert(rows);
+      }
     }
 
     setSaving(false);
-    setFormOpen(false);
-    setFile(null);
-    setIncompatibleWith(new Set());
-    setForm({ id: "", name: "", latinName: "", note: "", minShoalSize: "6", minTankLiters: "45", adultSizeCm: "5" });
+    cancelForm();
     loadSpecies();
   }
 
@@ -136,7 +201,7 @@ export default function FishManager() {
           Balık Türleri ({species.length})
         </h2>
         <button
-          onClick={() => setFormOpen((v) => !v)}
+          onClick={() => (formOpen ? cancelForm() : setFormOpen(true))}
           className="rounded-full bg-gold px-4 py-1.5 font-body text-xs font-semibold text-abyss"
         >
           {formOpen ? "İptal" : "+ Yeni Balık"}
@@ -144,7 +209,12 @@ export default function FishManager() {
       </div>
 
       {formOpen && (
-        <form onSubmit={handleAdd} className="mt-4 space-y-4 rounded-2xl border border-abyss-border bg-abyss-surface p-5">
+        <form onSubmit={handleSubmit} className="mt-4 space-y-4 rounded-2xl border border-abyss-border bg-abyss-surface p-5">
+          {editingId && (
+            <p className="rounded-lg bg-aqua/10 px-3 py-2 font-body text-xs text-aqua">
+              &quot;{form.name}&quot; düzenleniyor
+            </p>
+          )}
           <div className="grid grid-cols-2 gap-3">
             <Field label="Tür Adı" value={form.name} onChange={(v) => setForm({ ...form, name: v })} required />
             <Field label="Latince Adı" value={form.latinName} onChange={(v) => setForm({ ...form, latinName: v })} />
@@ -158,14 +228,14 @@ export default function FishManager() {
 
           <div>
             <span className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.2em] text-ink-faint">
-              Görsel
+              Görsel {editingId && "(değiştirmek istemiyorsanız boş bırakın)"}
             </span>
             <input
               type="file"
               accept="image/*"
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
               className="w-full font-body text-xs text-ink-muted"
-              required
+              required={!editingId}
             />
           </div>
 
@@ -174,20 +244,22 @@ export default function FishManager() {
               Uyumsuz Olduğu Türler (varsa işaretleyin — işaretlenmeyenler otomatik uyumlu sayılır)
             </span>
             <div className="flex flex-wrap gap-2">
-              {species.map((f) => (
-                <button
-                  key={f.id}
-                  type="button"
-                  onClick={() => toggleIncompatible(f.id)}
-                  className={`rounded-full border px-3 py-1.5 font-body text-xs transition-colors ${
-                    incompatibleWith.has(f.id)
-                      ? "border-red-500 bg-red-500/10 text-red-400"
-                      : "border-abyss-border text-ink-muted hover:border-ink-faint"
-                  }`}
-                >
-                  {f.name}
-                </button>
-              ))}
+              {species
+                .filter((f) => f.id !== editingId)
+                .map((f) => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    onClick={() => toggleIncompatible(f.id)}
+                    className={`rounded-full border px-3 py-1.5 font-body text-xs transition-colors ${
+                      incompatibleWith.has(f.id)
+                        ? "border-red-500 bg-red-500/10 text-red-400"
+                        : "border-abyss-border text-ink-muted hover:border-ink-faint"
+                    }`}
+                  >
+                    {f.name}
+                  </button>
+                ))}
             </div>
           </div>
 
@@ -196,7 +268,7 @@ export default function FishManager() {
             disabled={saving}
             className="w-full rounded-full bg-gold py-3 font-body text-sm font-semibold text-abyss disabled:opacity-50"
           >
-            {saving ? "Kaydediliyor..." : "Balığı Yayına Al"}
+            {saving ? "Kaydediliyor..." : editingId ? "Değişiklikleri Kaydet" : "Balığı Yayına Al"}
           </button>
         </form>
       )}
@@ -208,17 +280,40 @@ export default function FishManager() {
               <Image src={f.image} alt={f.name} fill className="object-cover" />
             </div>
             <p className="p-2 font-body text-xs text-ink">{f.name}</p>
-            <button
-              onClick={() => handleDelete(f.id)}
-              className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-abyss/80 text-red-400 hover:bg-red-500 hover:text-white"
-              aria-label={`${f.name} sil`}
-            >
-              ×
-            </button>
+            <div className="absolute right-1.5 top-1.5 flex gap-1">
+              <button
+                onClick={() => startEdit(f)}
+                className="flex h-6 w-6 items-center justify-center rounded-full bg-abyss/80 text-aqua hover:bg-aqua hover:text-abyss"
+                aria-label={`${f.name} düzenle`}
+              >
+                <EditIcon />
+              </button>
+              <button
+                onClick={() => handleDelete(f.id)}
+                className="flex h-6 w-6 items-center justify-center rounded-full bg-abyss/80 text-red-400 hover:bg-red-500 hover:text-white"
+                aria-label={`${f.name} sil`}
+              >
+                ×
+              </button>
+            </div>
           </div>
         ))}
       </div>
     </div>
+  );
+}
+
+function EditIcon() {
+  return (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M12 20h9M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 
