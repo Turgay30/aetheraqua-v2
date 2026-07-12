@@ -25,8 +25,7 @@ export default function GirisPage() {
     setLoading(false);
 
     if (error) {
-      console.error("Supabase login error:", error);
-      setError(`Giriş hatası: ${error.message}`);
+      setError("E-posta veya şifre hatalı.");
       return;
     }
 

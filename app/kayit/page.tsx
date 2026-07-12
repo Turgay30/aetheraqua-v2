@@ -37,11 +37,10 @@ export default function KayitPage() {
     setLoading(false);
 
     if (error) {
-      console.error("Supabase signUp error:", error);
       setError(
         error.message.includes("already registered")
           ? "Bu e-posta adresi zaten kayıtlı."
-          : `Kayıt sırasında bir sorun oluştu: ${error.message}`
+          : "Kayıt sırasında bir sorun oluştu, lütfen tekrar deneyin."
       );
       return;
     }
