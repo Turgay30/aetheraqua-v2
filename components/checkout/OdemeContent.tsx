@@ -157,6 +157,27 @@ export default function OdemeContent() {
     // NOT: Gerçek ödeme tahsilatı (iyzico) burada devreye girecek.
     trackPurchase(generatedOrderNo, totalPrice, lines.length);
     if (coupon) markCouponUsed(coupon.code);
+
+    // E-posta gönderimi sipariş akışını bloklamasın — arka planda dener, başarısız olsa da sipariş geçerli kalır.
+    fetch("/api/send-order-confirmation", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        orderNo: generatedOrderNo,
+        customerName: form.name,
+        customerEmail: form.email,
+        customerAddress: form.address,
+        items: lines.map((line) => ({
+          product_name: line.productName,
+          size: line.size,
+          color_label: line.colorLabel,
+          quantity: line.quantity,
+          unit_price: line.unitPrice,
+        })),
+        total: totalPrice,
+      }),
+    }).catch(() => {});
+
     setOrderNo(generatedOrderNo);
     clear();
     setStep("confirmed");
