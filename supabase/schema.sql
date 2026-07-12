@@ -494,3 +494,45 @@ select a, b, false from (values
   ('dwarf_gourami','zebra_danio'), ('zebra_danio','dwarf_gourami')
 ) as t(a, b)
 on conflict (fish_a, fish_b) do nothing;
+
+-- ============================================
+-- 16. YENİ ÜRÜNLER İÇİN ŞABLON SİSTEMİ
+-- ============================================
+alter table public.products add column if not exists is_builtin boolean not null default false;
+alter table public.products add column if not exists name text;
+alter table public.products add column if not exists tagline text;
+alter table public.products add column if not exists description text;
+alter table public.products add column if not exists accent_color text not null default '#C9A227';
+alter table public.products add column if not exists images jsonb not null default '[]'::jsonb;
+alter table public.products add column if not exists features jsonb not null default '[]'::jsonb;
+alter table public.products add column if not exists tech_specs jsonb not null default '[]'::jsonb;
+alter table public.products add column if not exists mythology_title text;
+alter table public.products add column if not exists mythology_paragraphs jsonb not null default '[]'::jsonb;
+
+update public.products set is_builtin = true where product_id in ('apollo', 'helios');
+update public.products set name = 'Apollo', tagline = 'Işığın Efendisi' where product_id = 'apollo' and name is null;
+update public.products set name = 'Helios', tagline = 'Gündüzün Taşıyıcısı' where product_id = 'helios' and name is null;
+
+drop policy if exists "Admin ürün ekleyip silebilir" on public.products;
+create policy "Admin ürün ekleyip silebilir"
+  on public.products for all
+  to authenticated
+  using (auth.jwt() ->> 'email' = 'turgayturan705@gmail.com')
+  with check (auth.jwt() ->> 'email' = 'turgayturan705@gmail.com');
+
+-- Yeni ürün eklendiğinde tüm boylar için başlangıç stoğu otomatik oluştur
+create or replace function public.seed_stock_for_new_product()
+returns trigger as $$
+begin
+  insert into public.stock (product_id, size, quantity)
+  select new.product_id, s.size, 15
+  from (values (30),(40),(50),(60),(70),(80),(90),(100),(110),(120)) as s(size)
+  on conflict (product_id, size) do nothing;
+  return new;
+end;
+$$ language plpgsql security definer;
+
+drop trigger if exists on_product_created on public.products;
+create trigger on_product_created
+  after insert on public.products
+  for each row execute function public.seed_stock_for_new_product();

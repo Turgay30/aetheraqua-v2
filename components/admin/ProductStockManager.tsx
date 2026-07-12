@@ -102,15 +102,15 @@ export default function ProductStockManager() {
       </div>
 
       {/* Stok */}
-      {["apollo", "helios"].map((productId) => (
-        <div key={productId}>
+      {products.map((p) => (
+        <div key={p.product_id}>
           <h2 className="font-mono text-[11px] uppercase tracking-[0.25em] text-ink-faint">
-            {PRODUCT_LABELS[productId]} — Stok (Boy Bazında)
+            {PRODUCT_LABELS[p.product_id] ?? p.product_id} — Stok (Boy Bazında)
           </h2>
           <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-5">
             {SIZES_CM.map((size) => {
-              const row = stock.find((s) => s.product_id === productId && s.size === size);
-              const key = `${productId}-${size}`;
+              const row = stock.find((s) => s.product_id === p.product_id && s.size === size);
+              const key = `${p.product_id}-${size}`;
               return (
                 <div key={size} className="rounded-xl border border-abyss-border bg-abyss-surface p-3">
                   <p className="font-mono text-[10px] text-ink-faint">{size}cm</p>
@@ -121,7 +121,7 @@ export default function ProductStockManager() {
                       key={row?.quantity}
                       onBlur={(e) => {
                         const newQty = Number(e.target.value);
-                        if (newQty !== row?.quantity) saveStock(productId, size, newQty);
+                        if (newQty !== row?.quantity) saveStock(p.product_id, size, newQty);
                       }}
                       className="w-full rounded-md border border-abyss-border bg-abyss px-2 py-1 font-mono text-xs text-ink outline-none focus-visible:border-aqua"
                     />

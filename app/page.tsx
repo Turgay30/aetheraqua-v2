@@ -5,6 +5,7 @@ import SpecStrip from "@/components/SpecStrip";
 import DecorativeGlow from "@/components/DecorativeGlow";
 import LightBeam from "@/components/LightBeam";
 import GhostBackground from "@/components/GhostBackground";
+import MoreProducts from "@/components/MoreProducts";
 
 export default function Home() {
   return (
@@ -80,6 +81,8 @@ export default function Home() {
           />
         </div>
       </section>
+
+      <MoreProducts />
 
       {/* Akvaryum Asistanı */}
       <section className="px-6 pb-24">

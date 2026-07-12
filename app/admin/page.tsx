@@ -6,6 +6,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
 import { formatTL } from "@/lib/pricing";
 import ProductStockManager from "@/components/admin/ProductStockManager";
+import ProductManager from "@/components/admin/ProductManager";
 import FishManager from "@/components/admin/FishManager";
 
 const ADMIN_EMAIL = "turgayturan705@gmail.com";
@@ -155,7 +156,8 @@ export default function AdminPage() {
           </div>
         </>
       ) : tab === "products" ? (
-        <div className="mt-8">
+        <div className="mt-8 space-y-12">
+          <ProductManager />
           <ProductStockManager />
         </div>
       ) : (
