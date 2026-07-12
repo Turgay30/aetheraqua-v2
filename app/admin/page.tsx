@@ -10,6 +10,7 @@ import ProductManager from "@/components/admin/ProductManager";
 import FishManager from "@/components/admin/FishManager";
 import CouponManager from "@/components/admin/CouponManager";
 import BlogManager from "@/components/admin/BlogManager";
+import SalesSummary from "@/components/admin/SalesSummary";
 
 const ADMIN_EMAIL = "turgayturan705@gmail.com";
 
@@ -127,7 +128,10 @@ export default function AdminPage() {
 
       {tab === "orders" ? (
         <>
-          <p className="mt-6 font-body text-sm text-ink-muted">
+          <div className="mt-6">
+            <SalesSummary />
+          </div>
+          <p className="font-body text-sm text-ink-muted">
             {orders ? `${orders.length} sipariş` : "Yükleniyor..."}
           </p>
 
