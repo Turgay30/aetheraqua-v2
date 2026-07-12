@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import DecorativeGlow from "@/components/DecorativeGlow";
+import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 
 export default function GirisPage() {
   const router = useRouter();
@@ -55,6 +56,14 @@ export default function GirisPage() {
             {loading ? "Giriş yapılıyor..." : "Giriş Yap"}
           </button>
         </form>
+
+        <div className="my-6 flex items-center gap-3">
+          <span className="h-px flex-1 bg-abyss-border" />
+          <span className="font-body text-xs text-ink-faint">veya</span>
+          <span className="h-px flex-1 bg-abyss-border" />
+        </div>
+
+        <GoogleSignInButton />
 
         <p className="mt-6 text-center font-body text-sm text-ink-muted">
           Hesabınız yok mu?{" "}

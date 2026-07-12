@@ -9,6 +9,7 @@ import { formatTL } from "@/lib/pricing";
 import DecorativeGlow from "@/components/DecorativeGlow";
 import AddressBook from "@/components/account/AddressBook";
 import FavoritesList from "@/components/account/FavoritesList";
+import MarketingConsentToggle from "@/components/account/MarketingConsentToggle";
 
 type OrderItem = {
   id: string;
@@ -142,6 +143,13 @@ export default function HesabimPage() {
 
         <div className="mt-12">
           <AddressBook userId={user.id} />
+        </div>
+
+        <div className="mt-12">
+          <h2 className="mb-4 font-mono text-[11px] uppercase tracking-[0.25em] text-ink-faint">
+            Gizlilik Tercihleri
+          </h2>
+          <MarketingConsentToggle userId={user.id} />
         </div>
       </section>
     </div>

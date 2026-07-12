@@ -281,3 +281,53 @@ create policy "Kullanıcı kendi değerlendirmesini silebilir"
   on public.reviews for delete
   to authenticated
   using (auth.uid() = user_id);
+
+-- ============================================
+-- 10. KVKK / PAZARLAMA İZNİ
+-- ============================================
+alter table public.profiles
+  add column if not exists marketing_consent boolean not null default false;
+
+-- ============================================
+-- 11. İŞLEM GÜNLÜĞÜ (Admin Loglama)
+-- ============================================
+create table if not exists public.audit_logs (
+  id uuid primary key default gen_random_uuid(),
+  actor_email text,
+  action text not null,
+  target_table text not null,
+  target_id text,
+  details jsonb,
+  created_at timestamptz not null default now()
+);
+
+alter table public.audit_logs enable row level security;
+
+drop policy if exists "Sadece admin günlüğü görebilir" on public.audit_logs;
+create policy "Sadece admin günlüğü görebilir"
+  on public.audit_logs for select
+  to authenticated
+  using (auth.jwt() ->> 'email' = 'turgayturan705@gmail.com');
+
+-- Sipariş durumu değiştiğinde otomatik günlük kaydı oluştur
+create or replace function public.log_order_status_change()
+returns trigger as $$
+begin
+  if new.status is distinct from old.status then
+    insert into public.audit_logs (actor_email, action, target_table, target_id, details)
+    values (
+      auth.jwt() ->> 'email',
+      'sipariş_durumu_değişti',
+      'orders',
+      new.id::text,
+      jsonb_build_object('eski_durum', old.status, 'yeni_durum', new.status, 'siparis_no', new.order_no)
+    );
+  end if;
+  return new;
+end;
+$$ language plpgsql security definer;
+
+drop trigger if exists on_order_status_change on public.orders;
+create trigger on_order_status_change
+  after update on public.orders
+  for each row execute function public.log_order_status_change();

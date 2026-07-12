@@ -5,12 +5,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import DecorativeGlow from "@/components/DecorativeGlow";
+import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 
 export default function KayitPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [marketingConsent, setMarketingConsent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -20,11 +22,17 @@ export default function KayitPage() {
     setLoading(true);
 
     const supabase = createClient();
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: { data: { full_name: name } },
     });
+
+    if (!error && data.user) {
+      await supabase
+        .from("profiles")
+        .upsert({ id: data.user.id, full_name: name, marketing_consent: marketingConsent });
+    }
 
     setLoading(false);
 
@@ -62,6 +70,18 @@ export default function KayitPage() {
             minLength={6}
           />
 
+          <label className="flex items-start gap-2.5">
+            <input
+              type="checkbox"
+              checked={marketingConsent}
+              onChange={(e) => setMarketingConsent(e.target.checked)}
+              className="mt-0.5 h-4 w-4 flex-shrink-0 accent-gold"
+            />
+            <span className="font-body text-xs leading-relaxed text-ink-muted">
+              Kampanya ve fırsatlardan e-posta ile haberdar olmak istiyorum. (İsteğe bağlı, dilediğiniz zaman Hesabım'dan kapatabilirsiniz.)
+            </span>
+          </label>
+
           {error && <p className="font-body text-sm text-red-400">{error}</p>}
 
           <button
@@ -72,6 +92,14 @@ export default function KayitPage() {
             {loading ? "Oluşturuluyor..." : "Hesap Oluştur"}
           </button>
         </form>
+
+        <div className="my-6 flex items-center gap-3">
+          <span className="h-px flex-1 bg-abyss-border" />
+          <span className="font-body text-xs text-ink-faint">veya</span>
+          <span className="h-px flex-1 bg-abyss-border" />
+        </div>
+
+        <GoogleSignInButton />
 
         <p className="mt-6 text-center font-body text-sm text-ink-muted">
           Zaten hesabınız var mı?{" "}
