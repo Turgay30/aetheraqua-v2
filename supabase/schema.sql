@@ -366,3 +366,131 @@ create policy "Admin stok güncelleyebilir"
   on public.stock for update
   to authenticated
   using (auth.jwt() ->> 'email' = 'turgayturan705@gmail.com');
+
+-- ============================================
+-- 13. GÖRSEL DEPOLAMA (Supabase Storage)
+-- ============================================
+insert into storage.buckets (id, name, public)
+values ('site-images', 'site-images', true)
+on conflict (id) do nothing;
+
+drop policy if exists "Görseller herkese açık okunabilir" on storage.objects;
+create policy "Görseller herkese açık okunabilir"
+  on storage.objects for select
+  using (bucket_id = 'site-images');
+
+drop policy if exists "Admin görsel yükleyebilir" on storage.objects;
+create policy "Admin görsel yükleyebilir"
+  on storage.objects for insert
+  to authenticated
+  with check (bucket_id = 'site-images' and auth.jwt() ->> 'email' = 'turgayturan705@gmail.com');
+
+drop policy if exists "Admin görsel silebilir" on storage.objects;
+create policy "Admin görsel silebilir"
+  on storage.objects for delete
+  to authenticated
+  using (bucket_id = 'site-images' and auth.jwt() ->> 'email' = 'turgayturan705@gmail.com');
+
+drop policy if exists "Admin görsel güncelleyebilir" on storage.objects;
+create policy "Admin görsel güncelleyebilir"
+  on storage.objects for update
+  to authenticated
+  using (bucket_id = 'site-images' and auth.jwt() ->> 'email' = 'turgayturan705@gmail.com');
+
+-- ============================================
+-- 14. BALIK TÜRLERİ (Akvaryum Asistanı — admin yönetimli)
+-- ============================================
+create table if not exists public.fish_species (
+  id text primary key,
+  name text not null,
+  latin_name text not null default '',
+  image_url text not null,
+  note text not null default '',
+  min_shoal_size int not null default 1,
+  min_tank_liters int not null default 40,
+  adult_size_cm numeric(4,1) not null default 5,
+  created_at timestamptz not null default now()
+);
+
+alter table public.fish_species enable row level security;
+
+drop policy if exists "Balıklar herkese açık okunabilir" on public.fish_species;
+create policy "Balıklar herkese açık okunabilir"
+  on public.fish_species for select
+  to anon, authenticated
+  using (true);
+
+drop policy if exists "Admin balık ekleyip silebilir" on public.fish_species;
+create policy "Admin balık ekleyip silebilir"
+  on public.fish_species for all
+  to authenticated
+  using (auth.jwt() ->> 'email' = 'turgayturan705@gmail.com')
+  with check (auth.jwt() ->> 'email' = 'turgayturan705@gmail.com');
+
+-- ============================================
+-- 15. BALIK UYUMLULUK İLİŞKİLERİ
+-- ============================================
+create table if not exists public.fish_compatibility (
+  fish_a text not null references public.fish_species(id) on delete cascade,
+  fish_b text not null references public.fish_species(id) on delete cascade,
+  compatible boolean not null default false,
+  primary key (fish_a, fish_b)
+);
+
+alter table public.fish_compatibility enable row level security;
+
+drop policy if exists "Uyumluluk herkese açık okunabilir" on public.fish_compatibility;
+create policy "Uyumluluk herkese açık okunabilir"
+  on public.fish_compatibility for select
+  to anon, authenticated
+  using (true);
+
+drop policy if exists "Admin uyumluluk yönetebilir" on public.fish_compatibility;
+create policy "Admin uyumluluk yönetebilir"
+  on public.fish_compatibility for all
+  to authenticated
+  using (auth.jwt() ->> 'email' = 'turgayturan705@gmail.com')
+  with check (auth.jwt() ->> 'email' = 'turgayturan705@gmail.com');
+
+-- İlk 17 türün verisi
+insert into public.fish_species (id, name, latin_name, image_url, note, min_shoal_size, min_tank_liters, adult_size_cm) values
+  ('neon_tetra', 'Neon Tetra', 'Paracheirodon innesi', '/fish/neon_tetra.jpg', 'Sakin, sürü halinde yaşayan küçük bir tetra.', 6, 40, 4),
+  ('ember_tetra', 'Ember Tetra', 'Hyphessobrycon amandae', '/fish/ember_tetra.jpg', 'Turuncu-kırmızı tonlarıyla dikkat çeken minik, sakin bir tetra.', 6, 30, 2),
+  ('harlequin_rasbora', 'Harlequin Rasbora', 'Trigonostigma heteromorpha', '/fish/harlequin_rasbora.jpg', 'Dayanıklı, sürü halinde hareket eden sakin bir tür.', 6, 45, 4.5),
+  ('zebra_danio', 'Zebra Danio', 'Danio rerio', '/fish/zebra_danio.jpg', 'Hareketli ve hızlı yüzen, dayanıklı bir sürü balığı.', 6, 45, 5),
+  ('guppy', 'Guppy (Lepistes)', 'Poecilia reticulata', '/fish/guppy.jpg', 'Canlı renkli, kolay bakımlı, doğurgan bir tür.', 3, 40, 5),
+  ('molly', 'Molly', 'Poecilia sphenops', '/fish/molly.jpg', 'Sağlam yapılı, uyumlu bir yaşayan doğurgan balık.', 3, 75, 10),
+  ('platy', 'Platy', 'Xiphophorus maculatus', '/fish/platy.jpg', 'Sakin, dayanıklı ve yeni başlayanlar için ideal.', 3, 40, 6),
+  ('swordtail', 'Kılıç Kuyruk', 'Xiphophorus hellerii', '/fish/swordtail.jpg', 'Kılıç şeklindeki kuyruğuyla tanınan aktif bir tür.', 3, 75, 12),
+  ('cherry_barb', 'Kiraz Barb', 'Puntius titteya', '/fish/cherry_barb.jpg', 'Barb türleri arasında en sakin olanlardan; iyi bir topluluk balığı.', 6, 60, 5),
+  ('tiger_barb', 'Kaplan Barb', 'Puntigrus tetrazona', '/fish/tiger_barb.jpg', 'Enerjik ve yarı agresif; yüzgeç ısırma eğilimi olabilir.', 6, 90, 7),
+  ('corydoras', 'Corydoras', 'Corydoras spp.', '/fish/corydoras.jpg', 'Dip temizleyici, çok sakin ve sosyal bir zırhlı kedi balığı.', 6, 60, 6),
+  ('kuhli_loach', 'Kuhli Loach', 'Pangio kuhlii', '/fish/kuhli_loach.jpg', 'Yılan gibi hareket eden, gece aktif, çok sakin bir dip balığı.', 3, 60, 10),
+  ('otocinclus', 'Otocinclus', 'Otocinclus spp.', '/fish/otocinclus.jpg', 'Küçük, zararsız bir alg temizleyicisi.', 3, 40, 5),
+  ('bristlenose_pleco', 'Bristlenose Pleco', 'Ancistrus cirrhosus', '/fish/bristlenose_pleco.jpg', 'Sakin, gece aktif bir alg temizleyicisi.', 1, 75, 12),
+  ('dwarf_gourami', 'Cüce Gurami', 'Trichogaster lalius', '/fish/dwarf_gourami.jpg', 'Renkli bir labirent balığı; dikkatli eşleştirilmeli.', 1, 75, 8),
+  ('angelfish', 'Melek Balığı', 'Pterophyllum scalare', '/fish/angelfish.jpg', 'Zarif ama yarı agresif; geniş ve derin tank ister.', 1, 150, 15),
+  ('betta', 'Betta (Beta Balığı)', 'Betta splendens', '/fish/betta.jpg', 'Yalnız yaşamayı tercih eden, toleranssız bir tür.', 1, 20, 6)
+on conflict (id) do nothing;
+
+-- Bilinen uyumsuzluk çiftleri (her iki yönde de kaydedilir)
+insert into public.fish_compatibility (fish_a, fish_b, compatible)
+select a, b, false from (values
+  ('betta','tiger_barb'), ('tiger_barb','betta'),
+  ('betta','dwarf_gourami'), ('dwarf_gourami','betta'),
+  ('betta','angelfish'), ('angelfish','betta'),
+  ('betta','zebra_danio'), ('zebra_danio','betta'),
+  ('tiger_barb','angelfish'), ('angelfish','tiger_barb'),
+  ('tiger_barb','dwarf_gourami'), ('dwarf_gourami','tiger_barb'),
+  ('tiger_barb','neon_tetra'), ('neon_tetra','tiger_barb'),
+  ('tiger_barb','ember_tetra'), ('ember_tetra','tiger_barb'),
+  ('tiger_barb','harlequin_rasbora'), ('harlequin_rasbora','tiger_barb'),
+  ('tiger_barb','guppy'), ('guppy','tiger_barb'),
+  ('tiger_barb','swordtail'), ('swordtail','tiger_barb'),
+  ('angelfish','neon_tetra'), ('neon_tetra','angelfish'),
+  ('angelfish','ember_tetra'), ('ember_tetra','angelfish'),
+  ('angelfish','zebra_danio'), ('zebra_danio','angelfish'),
+  ('angelfish','dwarf_gourami'), ('dwarf_gourami','angelfish'),
+  ('dwarf_gourami','zebra_danio'), ('zebra_danio','dwarf_gourami')
+) as t(a, b)
+on conflict (fish_a, fish_b) do nothing;

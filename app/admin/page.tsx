@@ -6,6 +6,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
 import { formatTL } from "@/lib/pricing";
 import ProductStockManager from "@/components/admin/ProductStockManager";
+import FishManager from "@/components/admin/FishManager";
 
 const ADMIN_EMAIL = "turgayturan705@gmail.com";
 
@@ -43,7 +44,7 @@ export default function AdminPage() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
   const [orders, setOrders] = useState<Order[] | null>(null);
-  const [tab, setTab] = useState<"orders" | "products">("orders");
+  const [tab, setTab] = useState<"orders" | "products" | "fish">("orders");
 
   useEffect(() => {
     if (isLoading) return;
@@ -95,6 +96,14 @@ export default function AdminPage() {
         >
           Ürün & Stok
         </button>
+        <button
+          onClick={() => setTab("fish")}
+          className={`rounded-full px-5 py-2 font-body text-sm transition-colors ${
+            tab === "fish" ? "bg-gold text-abyss" : "border border-abyss-border text-ink-muted"
+          }`}
+        >
+          Balıklar
+        </button>
       </div>
 
       {tab === "orders" ? (
@@ -145,9 +154,13 @@ export default function AdminPage() {
             ))}
           </div>
         </>
-      ) : (
+      ) : tab === "products" ? (
         <div className="mt-8">
           <ProductStockManager />
+        </div>
+      ) : (
+        <div className="mt-8">
+          <FishManager />
         </div>
       )}
     </div>

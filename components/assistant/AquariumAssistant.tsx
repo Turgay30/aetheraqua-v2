@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { FISH_SPECIES, areCompatible } from "@/lib/fish-data";
+import { useEffect, useMemo, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { FishSpecies } from "@/lib/fish-data";
 import { assessStocking, recommendEquipment } from "@/lib/aquarium-calc";
 import TankSizeInput from "@/components/assistant/TankSizeInput";
 import FishCard, { CardStatus } from "@/components/assistant/FishCard";
@@ -11,18 +12,55 @@ import StickySummaryBar from "@/components/assistant/StickySummaryBar";
 
 export default function AquariumAssistant() {
   const [liters, setLiters] = useState(60);
+  const [species, setSpecies] = useState<FishSpecies[]>([]);
+  const [incompatMap, setIncompatMap] = useState<Map<string, Set<string>>>(new Map());
+  const [loading, setLoading] = useState(true);
   // fishId -> adet (kaç tane seçildi)
   const [selection, setSelection] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    Promise.all([
+      supabase.from("fish_species").select("*").order("name"),
+      supabase.from("fish_compatibility").select("fish_a, fish_b").eq("compatible", false),
+    ]).then(([speciesRes, compatRes]) => {
+      const mappedSpecies: FishSpecies[] = (speciesRes.data ?? []).map((row) => ({
+        id: row.id,
+        name: row.name,
+        latinName: row.latin_name,
+        image: row.image_url,
+        note: row.note,
+        minShoalSize: row.min_shoal_size,
+        minTankLiters: row.min_tank_liters,
+        adultSizeCm: Number(row.adult_size_cm),
+      }));
+      setSpecies(mappedSpecies);
+
+      const map = new Map<string, Set<string>>();
+      (compatRes.data ?? []).forEach((row) => {
+        if (!map.has(row.fish_a)) map.set(row.fish_a, new Set());
+        map.get(row.fish_a)!.add(row.fish_b);
+      });
+      setIncompatMap(map);
+      setLoading(false);
+    });
+  }, []);
+
+  function areCompatible(idA: string, idB: string): boolean {
+    if (idA === idB) return true;
+    return !incompatMap.get(idA)?.has(idB);
+  }
 
   const selectedIds = useMemo(() => Object.keys(selection), [selection]);
 
   const totalAdultCm = useMemo(() => {
     return selectedIds.reduce((sum, id) => {
-      const fish = FISH_SPECIES.find((f) => f.id === id);
+      const fish = species.find((f) => f.id === id);
       if (!fish) return sum;
       return sum + fish.adultSizeCm * selection[id];
     }, 0);
-  }, [selection, selectedIds]);
+  }, [selection, selectedIds, species]);
 
   const stocking = useMemo(() => assessStocking(totalAdultCm, liters), [totalAdultCm, liters]);
   const equipment = useMemo(() => recommendEquipment(liters, stocking.level), [liters, stocking.level]);
@@ -44,7 +82,7 @@ export default function AquariumAssistant() {
       if (next[fishId]) {
         delete next[fishId];
       } else {
-        const fish = FISH_SPECIES.find((f) => f.id === fishId)!;
+        const fish = species.find((f) => f.id === fishId)!;
         next[fishId] = fish.minShoalSize;
       }
       return next;
@@ -53,6 +91,14 @@ export default function AquariumAssistant() {
 
   function updateCount(fishId: string, count: number) {
     setSelection((prev) => ({ ...prev, [fishId]: Math.max(1, count) }));
+  }
+
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-6xl px-6 pb-24 text-center">
+        <p className="font-body text-sm text-ink-muted">Balık listesi yükleniyor...</p>
+      </div>
+    );
   }
 
   return (
@@ -82,7 +128,7 @@ export default function AquariumAssistant() {
         </div>
 
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-          {FISH_SPECIES.map((fish) => (
+          {species.map((fish) => (
             <FishCard
               key={fish.id}
               fish={fish}
