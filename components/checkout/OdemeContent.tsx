@@ -86,33 +86,31 @@ export default function OdemeContent() {
     setSaveError(null);
 
     const generatedOrderNo = `AA-${Date.now().toString().slice(-8)}`;
+    const orderId = crypto.randomUUID();
     const supabase = createClient();
 
-    const { data: insertedOrder, error: orderError } = await supabase
-      .from("orders")
-      .insert({
-        order_no: generatedOrderNo,
-        user_id: user?.id ?? null,
-        customer_name: form.name,
-        customer_phone: form.phone,
-        customer_email: form.email,
-        customer_address: form.address,
-        invoice_type: form.invoiceType,
-        tckn: form.invoiceType === "bireysel" ? form.tckn : null,
-        company_name: form.invoiceType === "kurumsal" ? form.companyName : null,
-        tax_office: form.invoiceType === "kurumsal" ? form.taxOffice : null,
-        tax_number: form.invoiceType === "kurumsal" ? form.taxNumber : null,
-        subtotal,
-        coupon_code: coupon?.code ?? null,
-        coupon_discount: couponDiscount,
-        total: totalPrice,
-        legal_text_version: LEGAL_TEXT_VERSION,
-        consent_accepted_at: new Date().toISOString(),
-      })
-      .select("id")
-      .single();
+    const { error: orderError } = await supabase.from("orders").insert({
+      id: orderId,
+      order_no: generatedOrderNo,
+      user_id: user?.id ?? null,
+      customer_name: form.name,
+      customer_phone: form.phone,
+      customer_email: form.email,
+      customer_address: form.address,
+      invoice_type: form.invoiceType,
+      tckn: form.invoiceType === "bireysel" ? form.tckn : null,
+      company_name: form.invoiceType === "kurumsal" ? form.companyName : null,
+      tax_office: form.invoiceType === "kurumsal" ? form.taxOffice : null,
+      tax_number: form.invoiceType === "kurumsal" ? form.taxNumber : null,
+      subtotal,
+      coupon_code: coupon?.code ?? null,
+      coupon_discount: couponDiscount,
+      total: totalPrice,
+      legal_text_version: LEGAL_TEXT_VERSION,
+      consent_accepted_at: new Date().toISOString(),
+    });
 
-    if (orderError || !insertedOrder) {
+    if (orderError) {
       setSaving(false);
       setSaveError("Sipariş kaydedilirken bir sorun oluştu. Lütfen tekrar deneyin.");
       return;
@@ -120,7 +118,7 @@ export default function OdemeContent() {
 
     const { error: itemsError } = await supabase.from("order_items").insert(
       lines.map((line) => ({
-        order_id: insertedOrder.id,
+        order_id: orderId,
         product_id: line.productId,
         product_name: line.productName,
         size: line.size,
