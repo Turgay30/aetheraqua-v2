@@ -4,10 +4,17 @@ import { NextResponse, type NextRequest } from "next/server";
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  // Ortam değişkenleri henüz tanımlı değilse (örn. Vercel'e eklenmeden önce)
+  // Supabase'e hiç dokunmadan isteği olduğu gibi geçir — site çökmesin.
+  if (!supabaseUrl || !supabaseKey) {
+    return response;
+  }
+
+  try {
+    const supabase = createServerClient(supabaseUrl, supabaseKey, {
       cookies: {
         getAll() {
           return request.cookies.getAll();
@@ -20,11 +27,13 @@ export async function middleware(request: NextRequest) {
           );
         },
       },
-    }
-  );
+    });
 
-  // Oturumu tazele (gerekliyse) — sonuç kullanılmasa da bu çağrı cookie'leri günceller
-  await supabase.auth.getUser();
+    // Oturumu tazele (gerekliyse) — sonuç kullanılmasa da bu çağrı cookie'leri günceller
+    await supabase.auth.getUser();
+  } catch {
+    // Supabase'e erişilemiyorsa bile site çalışmaya devam etsin
+  }
 
   return response;
 }
