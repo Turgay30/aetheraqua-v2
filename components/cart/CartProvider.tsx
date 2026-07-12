@@ -8,7 +8,7 @@ import {
   useState,
   ReactNode,
 } from "react";
-import { Coupon, findCoupon, calcCouponDiscount } from "@/lib/coupons";
+import { Coupon, fetchCoupon, calcCouponDiscount } from "@/lib/coupons";
 
 export type CartLine = {
   key: string; // `${productId}-${size}-${colorId}`
@@ -35,8 +35,9 @@ type CartContextValue = {
   isLoaded: boolean;
   coupon: Coupon | null;
   couponError: string | null;
+  couponApplying: boolean;
   couponDiscount: number;
-  applyCoupon: (code: string) => void;
+  applyCoupon: (code: string) => Promise<void>;
   removeCoupon: () => void;
 };
 
@@ -49,6 +50,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([]);
   const [coupon, setCoupon] = useState<Coupon | null>(null);
   const [couponError, setCouponError] = useState<string | null>(null);
+  const [couponApplying, setCouponApplying] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
 
   // İlk yüklemede localStorage'dan sepeti ve kuponu oku
@@ -116,14 +118,24 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setCouponError(null);
   }
 
-  function applyCoupon(code: string) {
-    const found = findCoupon(code);
-    if (!found) {
+  async function applyCoupon(code: string) {
+    setCouponApplying(true);
+    const result = await fetchCoupon(code);
+    setCouponApplying(false);
+
+    if (!result.ok) {
       setCoupon(null);
-      setCouponError("Geçersiz kupon kodu.");
+      const messages: Record<typeof result.reason, string> = {
+        not_found: "Geçersiz kupon kodu.",
+        inactive: "Bu kupon artık aktif değil.",
+        expired: "Bu kuponun süresi dolmuş.",
+        limit_reached: "Bu kuponun kullanım limiti dolmuş.",
+      };
+      setCouponError(messages[result.reason]);
       return;
     }
-    setCoupon(found);
+
+    setCoupon(result.coupon);
     setCouponError(null);
   }
 
@@ -157,6 +169,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         isLoaded,
         coupon,
         couponError,
+        couponApplying,
         couponDiscount,
         applyCoupon,
         removeCoupon,

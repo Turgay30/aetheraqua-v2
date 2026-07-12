@@ -16,6 +16,7 @@ export default function SepetContent() {
     isLoaded,
     coupon,
     couponError,
+    couponApplying,
     couponDiscount,
     applyCoupon,
     removeCoupon,
@@ -136,9 +137,10 @@ export default function SepetContent() {
                 />
                 <button
                   onClick={() => applyCoupon(couponInput)}
-                  className="flex-shrink-0 rounded-lg border border-abyss-border px-4 py-2.5 font-body text-sm text-ink hover:border-aqua hover:text-aqua"
+                  disabled={couponApplying || !couponInput}
+                  className="flex-shrink-0 rounded-lg border border-abyss-border px-4 py-2.5 font-body text-sm text-ink hover:border-aqua hover:text-aqua disabled:opacity-50"
                 >
-                  Uygula
+                  {couponApplying ? "..." : "Uygula"}
                 </button>
               </div>
               {couponError && (

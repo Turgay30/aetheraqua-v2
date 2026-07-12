@@ -538,6 +538,52 @@ create trigger on_product_created
   for each row execute function public.seed_stock_for_new_product();
 
 -- ============================================
+-- 17. KUPON YÖNETİMİ (Admin'den düzenlenebilir)
+-- ============================================
+create table if not exists public.coupons (
+  code text primary key,
+  type text not null check (type in ('percent', 'fixed')),
+  value numeric(10,2) not null,
+  is_active boolean not null default true,
+  expires_at timestamptz,
+  usage_limit int,
+  times_used int not null default 0,
+  created_at timestamptz not null default now()
+);
+
+alter table public.coupons enable row level security;
+
+drop policy if exists "Kuponlar herkese açık okunabilir" on public.coupons;
+create policy "Kuponlar herkese açık okunabilir"
+  on public.coupons for select
+  to anon, authenticated
+  using (true);
+
+drop policy if exists "Admin kupon yönetebilir" on public.coupons;
+create policy "Admin kupon yönetebilir"
+  on public.coupons for all
+  to authenticated
+  using (auth.jwt() ->> 'email' = 'turgayturan705@gmail.com')
+  with check (auth.jwt() ->> 'email' = 'turgayturan705@gmail.com');
+
+-- Mevcut iki kuponu aktar
+insert into public.coupons (code, type, value) values
+  ('HOSGELDIN10', 'percent', 10),
+  ('AETHER500', 'fixed', 500)
+on conflict (code) do nothing;
+
+-- Ödeme sırasında kuponun kullanım sayısını güvenle artırmak için
+-- (anon kullanıcılar coupons tablosunu doğrudan güncelleyemez, sadece bu fonksiyon üzerinden)
+create or replace function public.increment_coupon_usage(coupon_code text)
+returns void as $$
+begin
+  update public.coupons set times_used = times_used + 1 where code = coupon_code;
+end;
+$$ language plpgsql security definer;
+
+grant execute on function public.increment_coupon_usage(text) to anon, authenticated;
+
+-- ============================================
 -- 17. ERİŞİM İZİNLERİ (GRANT) — "permission denied" hatasını önler
 -- ============================================
 -- RLS politikaları erişimi KISITLAR ama temel tablo izni (GRANT) olmadan

@@ -1,3 +1,5 @@
+import { createClient } from "@/lib/supabase/client";
+
 export type Coupon = {
   code: string;
   type: "percent" | "fixed";
@@ -5,16 +7,35 @@ export type Coupon = {
   label: string;
 };
 
-// TODO: Kampanyalarınıza göre bu listeyi güncelleyin/genişletin.
-// İleride admin panelinden yönetilecek — şimdilik kod içinde tanımlı.
-export const COUPONS: Coupon[] = [
-  { code: "HOSGELDIN10", type: "percent", value: 10, label: "%10 indirim" },
-  { code: "AETHER500", type: "fixed", value: 500, label: "500 TL indirim" },
-];
+export type CouponLookupResult =
+  | { ok: true; coupon: Coupon }
+  | { ok: false; reason: "not_found" | "inactive" | "expired" | "limit_reached" };
 
-export function findCoupon(code: string): Coupon | null {
+export async function fetchCoupon(code: string): Promise<CouponLookupResult> {
   const normalized = code.trim().toUpperCase();
-  return COUPONS.find((c) => c.code === normalized) ?? null;
+  const supabase = createClient();
+
+  const { data } = await supabase
+    .from("coupons")
+    .select("code, type, value, is_active, expires_at, usage_limit, times_used")
+    .eq("code", normalized)
+    .maybeSingle();
+
+  if (!data) return { ok: false, reason: "not_found" };
+  if (!data.is_active) return { ok: false, reason: "inactive" };
+  if (data.expires_at && new Date(data.expires_at) < new Date()) {
+    return { ok: false, reason: "expired" };
+  }
+  if (data.usage_limit !== null && data.times_used >= data.usage_limit) {
+    return { ok: false, reason: "limit_reached" };
+  }
+
+  const label = data.type === "percent" ? `%${data.value} indirim` : `${data.value} TL indirim`;
+
+  return {
+    ok: true,
+    coupon: { code: data.code, type: data.type as "percent" | "fixed", value: Number(data.value), label },
+  };
 }
 
 export function calcCouponDiscount(coupon: Coupon, subtotal: number): number {
@@ -22,4 +43,9 @@ export function calcCouponDiscount(coupon: Coupon, subtotal: number): number {
     return Math.round((subtotal * coupon.value) / 100);
   }
   return Math.min(coupon.value, subtotal);
+}
+
+export async function markCouponUsed(code: string) {
+  const supabase = createClient();
+  await supabase.rpc("increment_coupon_usage", { coupon_code: code });
 }

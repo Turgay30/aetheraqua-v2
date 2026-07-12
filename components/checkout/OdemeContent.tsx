@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCart } from "@/components/cart/CartProvider";
 import { formatTL } from "@/lib/pricing";
 import { trackPurchase } from "@/lib/analytics";
+import { markCouponUsed } from "@/lib/coupons";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/components/auth/AuthProvider";
 
@@ -155,6 +156,7 @@ export default function OdemeContent() {
 
     // NOT: Gerçek ödeme tahsilatı (iyzico) burada devreye girecek.
     trackPurchase(generatedOrderNo, totalPrice, lines.length);
+    if (coupon) markCouponUsed(coupon.code);
     setOrderNo(generatedOrderNo);
     clear();
     setStep("confirmed");
