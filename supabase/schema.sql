@@ -638,6 +638,37 @@ create policy "Admin yazı yönetebilir"
 grant select, insert, update, delete on public.blog_posts to authenticated;
 grant select on public.blog_posts to anon;
 
+-- ============================================
+-- 19. BİTKİLER (Akvaryum Asistanı — admin yönetimli)
+-- ============================================
+create table if not exists public.plants (
+  id text primary key,
+  name text not null,
+  image_url text not null,
+  note text not null default '',
+  light_level text not null default 'orta' check (light_level in ('düşük','orta','yüksek')),
+  co2_required boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+alter table public.plants enable row level security;
+
+drop policy if exists "Bitkiler herkese açık okunabilir" on public.plants;
+create policy "Bitkiler herkese açık okunabilir"
+  on public.plants for select
+  to anon, authenticated
+  using (true);
+
+drop policy if exists "Admin bitki yönetebilir" on public.plants;
+create policy "Admin bitki yönetebilir"
+  on public.plants for all
+  to authenticated
+  using (auth.jwt() ->> 'email' = 'turgayturan705@gmail.com')
+  with check (auth.jwt() ->> 'email' = 'turgayturan705@gmail.com');
+
+grant select, insert, update, delete on public.plants to authenticated;
+grant select on public.plants to anon;
+
 NOTIFY pgrst, 'reload schema';
 
 -- ============================================

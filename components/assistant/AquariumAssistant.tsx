@@ -10,6 +10,7 @@ import StockingSummary from "@/components/assistant/StockingSummary";
 import EquipmentRecommendation from "@/components/assistant/EquipmentRecommendation";
 import StickySummaryBar from "@/components/assistant/StickySummaryBar";
 import ShareResult from "@/components/assistant/ShareResult";
+import PlantSelector from "@/components/assistant/PlantSelector";
 
 export default function AquariumAssistant() {
   const [liters, setLiters] = useState(60);
@@ -149,6 +150,9 @@ export default function AquariumAssistant() {
           ))}
         </div>
       </div>
+
+      {/* 3. Bitki seçimi (opsiyonel) */}
+      <PlantSelector />
 
       {/* 3-4. Stoklama + Ekipman */}
       {selectedIds.length > 0 && (

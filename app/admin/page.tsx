@@ -11,6 +11,7 @@ import FishManager from "@/components/admin/FishManager";
 import CouponManager from "@/components/admin/CouponManager";
 import BlogManager from "@/components/admin/BlogManager";
 import SalesSummary from "@/components/admin/SalesSummary";
+import PlantManager from "@/components/admin/PlantManager";
 
 const ADMIN_EMAIL = "turgayturan705@gmail.com";
 
@@ -48,7 +49,7 @@ export default function AdminPage() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
   const [orders, setOrders] = useState<Order[] | null>(null);
-  const [tab, setTab] = useState<"orders" | "products" | "fish" | "coupons" | "blog">("orders");
+  const [tab, setTab] = useState<"orders" | "products" | "fish" | "coupons" | "blog" | "plants">("orders");
 
   useEffect(() => {
     if (isLoading) return;
@@ -107,6 +108,14 @@ export default function AdminPage() {
           }`}
         >
           Balıklar
+        </button>
+        <button
+          onClick={() => setTab("plants")}
+          className={`rounded-full px-5 py-2 font-body text-sm transition-colors ${
+            tab === "plants" ? "bg-gold text-abyss" : "border border-abyss-border text-ink-muted"
+          }`}
+        >
+          Bitkiler
         </button>
         <button
           onClick={() => setTab("coupons")}
@@ -185,6 +194,10 @@ export default function AdminPage() {
       ) : tab === "fish" ? (
         <div className="mt-8">
           <FishManager />
+        </div>
+      ) : tab === "plants" ? (
+        <div className="mt-8">
+          <PlantManager />
         </div>
       ) : tab === "coupons" ? (
         <div className="mt-8">
