@@ -5,6 +5,16 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
+      disallow: [
+        "/admin",
+        "/hesabim",
+        "/odeme",
+        "/sepet",
+        "/api/",
+        "/auth/",
+        "/sifremi-unuttum",
+        "/sifre-guncelle",
+      ],
     },
     sitemap: "https://aetheraqua.com/sitemap.xml",
   };

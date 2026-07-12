@@ -87,7 +87,7 @@ export default function GizlilikPolitikasiPage() {
           <li>İşlemeye itiraz etme haklarına sahipsiniz.</li>
         </ul>
         <p>
-          Bu haklarınızı kullanmak için [iletişim e-postası] adresinden
+          Bu haklarınızı kullanmak için infoaetheraqua@gmail.com adresinden
           bize ulaşabilirsiniz.
         </p>
       </LegalSection>

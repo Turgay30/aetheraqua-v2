@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import FavoriteButton from "@/components/product/FavoriteButton";
+import { createClient } from "@/lib/supabase/client";
+import { formatTL } from "@/lib/pricing";
 
 type Variant = "apollo" | "helios";
 
@@ -55,6 +57,21 @@ export default function ProductCard({
 }) {
   const s = variantStyles[variant];
   const [quickViewOpen, setQuickViewOpen] = useState(false);
+  const [livePrice, setLivePrice] = useState<string | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from("products")
+      .select("base_price")
+      .eq("product_id", variant)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.base_price) setLivePrice(formatTL(Number(data.base_price)));
+      });
+  }, [variant]);
+
+  const displayPrice = livePrice ?? startingPrice;
 
   return (
     <div className="group relative">
@@ -91,7 +108,7 @@ export default function ProductCard({
             <p className={`font-body text-sm ${s.muted}`}>
               30cm&apos;den başlıyor
               <span className={`ml-2 font-display text-xl ${s.text}`}>
-                {startingPrice}
+                {displayPrice}
               </span>
             </p>
             <span
@@ -125,7 +142,7 @@ export default function ProductCard({
           name={name}
           tagline={tagline}
           specs={specs}
-          startingPrice={startingPrice}
+          startingPrice={displayPrice}
           imageSrc={imageSrc}
           href={href}
           onClose={() => setQuickViewOpen(false)}
