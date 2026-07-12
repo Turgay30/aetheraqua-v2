@@ -3,6 +3,8 @@ import ProductGallery from "@/components/product/ProductGallery";
 import FavoriteButton from "@/components/product/FavoriteButton";
 import ProductJsonLd from "@/components/ProductJsonLd";
 import CrossSell from "@/components/product/CrossSell";
+import ReviewsSection from "@/components/product/ReviewsSection";
+import RatingSummary from "@/components/product/RatingSummary";
 import ProductConfigurator from "@/components/product/ProductConfigurator";
 import TechSpecTable from "@/components/product/TechSpecTable";
 import MythologySection from "@/components/product/MythologySection";
@@ -63,6 +65,9 @@ export default function HeliosPage() {
               Helios
             </h1>
             <FavoriteButton productId="helios" className="border border-abyss-border !bg-transparent" />
+          </div>
+          <div className="mt-2">
+            <RatingSummary productId="helios" />
           </div>
           <p className="mt-5 max-w-md font-body text-[15px] leading-relaxed text-ink-muted">
             Her akvaryum için doğru, dengeli ve güvenilir bir gündüz ışığı.
@@ -130,6 +135,11 @@ export default function HeliosPage() {
             "Helios serisi bu güvenilirliği yansıtır: gösterişten uzak, sabit ve dengeli bir gündüz ışığı sunar. Akvaryumunuzun her köşesine, her gün aynı netlikte ulaşan, hiç yorulmayan bir güneş.",
           ]}
         />
+      </section>
+
+      {/* Değerlendirmeler */}
+      <section className="mx-auto max-w-2xl px-6 pb-16">
+        <ReviewsSection productId="helios" theme="helios" />
       </section>
 
       {/* Çapraz Satış */}

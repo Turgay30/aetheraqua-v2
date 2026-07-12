@@ -241,3 +241,43 @@ create policy "Admin tüm sipariş kalemlerini görebilir"
   on public.order_items for select
   to authenticated
   using (auth.jwt() ->> 'email' = 'turgayturan705@gmail.com');
+
+-- ============================================
+-- 9. DEĞERLENDİRME / YORUM SİSTEMİ
+-- ============================================
+create table if not exists public.reviews (
+  id uuid primary key default gen_random_uuid(),
+  product_id text not null check (product_id in ('apollo','helios')),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  reviewer_name text not null,
+  rating int not null check (rating between 1 and 5),
+  comment text,
+  created_at timestamptz not null default now(),
+  unique (product_id, user_id)
+);
+
+alter table public.reviews enable row level security;
+
+drop policy if exists "Değerlendirmeler herkese açık okunabilir" on public.reviews;
+create policy "Değerlendirmeler herkese açık okunabilir"
+  on public.reviews for select
+  to anon, authenticated
+  using (true);
+
+drop policy if exists "Kullanıcı kendi değerlendirmesini oluşturabilir" on public.reviews;
+create policy "Kullanıcı kendi değerlendirmesini oluşturabilir"
+  on public.reviews for insert
+  to authenticated
+  with check (auth.uid() = user_id);
+
+drop policy if exists "Kullanıcı kendi değerlendirmesini güncelleyebilir" on public.reviews;
+create policy "Kullanıcı kendi değerlendirmesini güncelleyebilir"
+  on public.reviews for update
+  to authenticated
+  using (auth.uid() = user_id);
+
+drop policy if exists "Kullanıcı kendi değerlendirmesini silebilir" on public.reviews;
+create policy "Kullanıcı kendi değerlendirmesini silebilir"
+  on public.reviews for delete
+  to authenticated
+  using (auth.uid() = user_id);

@@ -3,6 +3,8 @@ import ProductGallery from "@/components/product/ProductGallery";
 import FavoriteButton from "@/components/product/FavoriteButton";
 import ProductJsonLd from "@/components/ProductJsonLd";
 import CrossSell from "@/components/product/CrossSell";
+import ReviewsSection from "@/components/product/ReviewsSection";
+import RatingSummary from "@/components/product/RatingSummary";
 import ProductConfigurator from "@/components/product/ProductConfigurator";
 import TechSpecTable from "@/components/product/TechSpecTable";
 import MythologySection from "@/components/product/MythologySection";
@@ -63,6 +65,9 @@ export default function ApolloPage() {
               Apollo
             </h1>
             <FavoriteButton productId="apollo" className="border border-apollo-gold/20 !bg-transparent" />
+          </div>
+          <div className="mt-2">
+            <RatingSummary productId="apollo" textClass="text-apollo-muted" />
           </div>
           <p className="mt-5 max-w-md font-body text-[15px] leading-relaxed text-apollo-muted">
             Üst segment akvaryumlar için tasarlanan Apollo, gün ışığının tüm
@@ -131,6 +136,11 @@ export default function ApolloPage() {
             "Apollo serisi, bu döngüyü akvaryumunuza taşımak için tasarlandı: gün doğumunun ilk ışınlarından öğlenin keskin netliğine, alacakaranlığın sıcak tonlarından yıldızlı bir geceye kadar — her an, canlılarınızın doğal ritmine sadık kalır.",
           ]}
         />
+      </section>
+
+      {/* Değerlendirmeler */}
+      <section className="mx-auto max-w-2xl px-6 pb-16">
+        <ReviewsSection productId="apollo" theme="apollo" />
       </section>
 
       {/* Çapraz Satış */}
