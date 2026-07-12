@@ -12,6 +12,7 @@ import CouponManager from "@/components/admin/CouponManager";
 import BlogManager from "@/components/admin/BlogManager";
 import SalesSummary from "@/components/admin/SalesSummary";
 import PlantManager from "@/components/admin/PlantManager";
+import ShrimpManager from "@/components/admin/ShrimpManager";
 import TrackingEditor from "@/components/admin/TrackingEditor";
 
 const ADMIN_EMAIL = "turgayturan705@gmail.com";
@@ -52,7 +53,7 @@ export default function AdminPage() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
   const [orders, setOrders] = useState<Order[] | null>(null);
-  const [tab, setTab] = useState<"orders" | "products" | "fish" | "coupons" | "blog" | "plants">("orders");
+  const [tab, setTab] = useState<"orders" | "products" | "fish" | "shrimp" | "plants" | "coupons" | "blog">("orders");
 
   useEffect(() => {
     if (isLoading) return;
@@ -135,6 +136,14 @@ export default function AdminPage() {
           }`}
         >
           Bitkiler
+        </button>
+        <button
+          onClick={() => setTab("shrimp")}
+          className={`rounded-full px-5 py-2 font-body text-sm transition-colors ${
+            tab === "shrimp" ? "bg-gold text-abyss" : "border border-abyss-border text-ink-muted"
+          }`}
+        >
+          Kabuklular
         </button>
         <button
           onClick={() => setTab("coupons")}
@@ -224,6 +233,10 @@ export default function AdminPage() {
       ) : tab === "plants" ? (
         <div className="mt-8">
           <PlantManager />
+        </div>
+      ) : tab === "shrimp" ? (
+        <div className="mt-8">
+          <ShrimpManager />
         </div>
       ) : tab === "coupons" ? (
         <div className="mt-8">

@@ -676,6 +676,77 @@ alter table public.orders add column if not exists tracking_number text;
 alter table public.orders add column if not exists shipping_company text;
 
 -- ============================================
+-- 21. KABUKLULAR (Karides vb. — admin yönetimli)
+-- ============================================
+create table if not exists public.shrimp_species (
+  id text primary key,
+  name text not null,
+  latin_name text not null default '',
+  image_url text not null,
+  note text not null default '',
+  min_shoal_size int not null default 5,
+  min_tank_liters int not null default 20,
+  adult_size_cm numeric(4,1) not null default 3,
+  created_at timestamptz not null default now()
+);
+
+alter table public.shrimp_species enable row level security;
+
+drop policy if exists "Kabuklular herkese açık okunabilir" on public.shrimp_species;
+create policy "Kabuklular herkese açık okunabilir"
+  on public.shrimp_species for select
+  to anon, authenticated
+  using (true);
+
+drop policy if exists "Admin kabuklu yönetebilir" on public.shrimp_species;
+create policy "Admin kabuklu yönetebilir"
+  on public.shrimp_species for all
+  to authenticated
+  using (auth.jwt() ->> 'email' = 'turgayturan705@gmail.com')
+  with check (auth.jwt() ->> 'email' = 'turgayturan705@gmail.com');
+
+grant select, insert, update, delete on public.shrimp_species to authenticated;
+grant select on public.shrimp_species to anon;
+
+-- ============================================
+-- 22. BİRLEŞİK UYUMLULUK SİSTEMİ
+-- (balık-balık, balık-karides, balık-bitki, karides-karides vb. hepsi burada)
+-- ============================================
+create table if not exists public.livestock_compatibility (
+  a_type text not null check (a_type in ('fish','shrimp','plant')),
+  a_id text not null,
+  b_type text not null check (b_type in ('fish','shrimp','plant')),
+  b_id text not null,
+  compatible boolean not null default false,
+  created_at timestamptz not null default now(),
+  primary key (a_type, a_id, b_type, b_id)
+);
+
+alter table public.livestock_compatibility enable row level security;
+
+drop policy if exists "Uyumluluk (birleşik) herkese açık okunabilir" on public.livestock_compatibility;
+create policy "Uyumluluk (birleşik) herkese açık okunabilir"
+  on public.livestock_compatibility for select
+  to anon, authenticated
+  using (true);
+
+drop policy if exists "Admin birleşik uyumluluk yönetebilir" on public.livestock_compatibility;
+create policy "Admin birleşik uyumluluk yönetebilir"
+  on public.livestock_compatibility for all
+  to authenticated
+  using (auth.jwt() ->> 'email' = 'turgayturan705@gmail.com')
+  with check (auth.jwt() ->> 'email' = 'turgayturan705@gmail.com');
+
+grant select, insert, update, delete on public.livestock_compatibility to authenticated;
+grant select on public.livestock_compatibility to anon;
+
+-- Eski balık-balık uyumsuzluk verisini yeni birleşik tabloya aktar
+insert into public.livestock_compatibility (a_type, a_id, b_type, b_id, compatible)
+select 'fish', fish_a, 'fish', fish_b, compatible
+from public.fish_compatibility
+on conflict (a_type, a_id, b_type, b_id) do nothing;
+
+-- ============================================
 -- 17. ERİŞİM İZİNLERİ (GRANT) — "permission denied" hatasını önler
 -- ============================================
 -- RLS politikaları erişimi KISITLAR ama temel tablo izni (GRANT) olmadan

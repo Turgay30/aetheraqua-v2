@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { uploadImage } from "@/lib/supabase/storage";
+import { CompatibilityKey } from "@/lib/livestock";
+import { saveCompatibility, loadIncompatibleWith } from "@/lib/admin-compatibility";
+import CompatibilityPicker from "@/components/admin/CompatibilityPicker";
 
 type Plant = {
   id: string;
@@ -23,6 +26,7 @@ export default function PlantManager() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [incompatibleWith, setIncompatibleWith] = useState<Set<CompatibilityKey>>(new Set());
   const [form, setForm] = useState(emptyForm);
 
   async function load() {
@@ -49,23 +53,26 @@ export default function PlantManager() {
       .replace(/^_+|_+$/g, "");
   }
 
-  function startEdit(plant: Plant) {
+  async function startEdit(plant: Plant) {
     setEditingId(plant.id);
     setForm({ name: plant.name, note: plant.note, lightLevel: plant.light_level, co2Required: plant.co2_required });
     setFile(null);
     setFormOpen(true);
+    setIncompatibleWith(await loadIncompatibleWith("plant", plant.id));
   }
 
   function cancelForm() {
     setFormOpen(false);
     setEditingId(null);
     setFile(null);
+    setIncompatibleWith(new Set());
     setForm(emptyForm);
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const isEdit = !!editingId;
+    const newId = slugify(form.name);
     if (!isEdit && !file) {
       alert("Lütfen bir görsel seçin.");
       return;
@@ -92,27 +99,30 @@ export default function PlantManager() {
       };
       if (imageUrl) payload.image_url = imageUrl;
       const { error } = await supabase.from("plants").update(payload).eq("id", editingId);
-      setSaving(false);
       if (error) {
+        setSaving(false);
         alert("Güncellenirken bir sorun oluştu: " + error.message);
         return;
       }
     } else {
       const { error } = await supabase.from("plants").insert({
-        id: slugify(form.name),
+        id: newId,
         name: form.name,
         image_url: imageUrl,
         note: form.note,
         light_level: form.lightLevel,
         co2_required: form.co2Required,
       });
-      setSaving(false);
       if (error) {
+        setSaving(false);
         alert("Bitki eklenirken bir sorun oluştu: " + error.message);
         return;
       }
     }
 
+    await saveCompatibility("plant", isEdit ? editingId! : newId, incompatibleWith);
+
+    setSaving(false);
     cancelForm();
     load();
   }
@@ -198,6 +208,18 @@ export default function PlantManager() {
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
               className="w-full font-body text-xs text-ink-muted"
               required={!editingId}
+            />
+          </div>
+
+          <div>
+            <span className="mb-2 block font-mono text-[10px] uppercase tracking-[0.2em] text-ink-faint">
+              Uyumsuz Olduğu Canlılar (örn. bu bitkiyi yiyen/söken balıklar)
+            </span>
+            <CompatibilityPicker
+              excludeType="plant"
+              excludeId={editingId ?? undefined}
+              selected={incompatibleWith}
+              onChange={setIncompatibleWith}
             />
           </div>
 

@@ -4,14 +4,24 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { uploadImage } from "@/lib/supabase/storage";
-import { FishSpecies } from "@/lib/fish-data";
 import { CompatibilityKey } from "@/lib/livestock";
 import { saveCompatibility, loadIncompatibleWith } from "@/lib/admin-compatibility";
 import CompatibilityPicker from "@/components/admin/CompatibilityPicker";
 import FormField from "@/components/admin/FormField";
 
-export default function FishManager() {
-  const [species, setSpecies] = useState<FishSpecies[]>([]);
+type Shrimp = {
+  id: string;
+  name: string;
+  latinName: string;
+  image: string;
+  note: string;
+  minShoalSize: number;
+  minTankLiters: number;
+  adultSizeCm: number;
+};
+
+export default function ShrimpManager() {
+  const [species, setSpecies] = useState<Shrimp[]>([]);
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -23,14 +33,14 @@ export default function FishManager() {
     name: "",
     latinName: "",
     note: "",
-    minShoalSize: "6",
-    minTankLiters: "45",
-    adultSizeCm: "5",
+    minShoalSize: "5",
+    minTankLiters: "20",
+    adultSizeCm: "3",
   });
 
   async function loadSpecies() {
     const supabase = createClient();
-    const { data } = await supabase.from("fish_species").select("*").order("name");
+    const { data } = await supabase.from("shrimp_species").select("*").order("name");
     setSpecies(
       (data ?? []).map((row) => ({
         id: row.id,
@@ -50,19 +60,19 @@ export default function FishManager() {
     loadSpecies();
   }, []);
 
-  async function startEdit(fish: FishSpecies) {
-    setEditingId(fish.id);
+  async function startEdit(shrimp: Shrimp) {
+    setEditingId(shrimp.id);
     setForm({
-      name: fish.name,
-      latinName: fish.latinName,
-      note: fish.note,
-      minShoalSize: String(fish.minShoalSize),
-      minTankLiters: String(fish.minTankLiters),
-      adultSizeCm: String(fish.adultSizeCm),
+      name: shrimp.name,
+      latinName: shrimp.latinName,
+      note: shrimp.note,
+      minShoalSize: String(shrimp.minShoalSize),
+      minTankLiters: String(shrimp.minTankLiters),
+      adultSizeCm: String(shrimp.adultSizeCm),
     });
     setFile(null);
     setFormOpen(true);
-    setIncompatibleWith(await loadIncompatibleWith("fish", fish.id));
+    setIncompatibleWith(await loadIncompatibleWith("shrimp", shrimp.id));
   }
 
   function cancelForm() {
@@ -70,7 +80,7 @@ export default function FishManager() {
     setEditingId(null);
     setFile(null);
     setIncompatibleWith(new Set());
-    setForm({ name: "", latinName: "", note: "", minShoalSize: "6", minTankLiters: "45", adultSizeCm: "5" });
+    setForm({ name: "", latinName: "", note: "", minShoalSize: "5", minTankLiters: "20", adultSizeCm: "3" });
   }
 
   function slugify(name: string) {
@@ -100,7 +110,7 @@ export default function FishManager() {
     let imageUrl: string | null = null;
 
     if (file) {
-      imageUrl = await uploadImage(file, "fish");
+      imageUrl = await uploadImage(file, "shrimp");
       if (!imageUrl) {
         setSaving(false);
         alert("Görsel yüklenemedi, tekrar deneyin.");
@@ -121,14 +131,14 @@ export default function FishManager() {
       };
       if (imageUrl) updatePayload.image_url = imageUrl;
 
-      const { error } = await supabase.from("fish_species").update(updatePayload).eq("id", id);
+      const { error } = await supabase.from("shrimp_species").update(updatePayload).eq("id", id);
       if (error) {
         setSaving(false);
         alert("Güncellenirken bir sorun oluştu: " + error.message);
         return;
       }
     } else {
-      const { error } = await supabase.from("fish_species").insert({
+      const { error } = await supabase.from("shrimp_species").insert({
         id,
         name: form.name,
         latin_name: form.latinName,
@@ -140,12 +150,12 @@ export default function FishManager() {
       });
       if (error) {
         setSaving(false);
-        alert("Balık eklenirken bir sorun oluştu: " + error.message);
+        alert("Kabuklu eklenirken bir sorun oluştu: " + error.message);
         return;
       }
     }
 
-    await saveCompatibility("fish", id, incompatibleWith);
+    await saveCompatibility("shrimp", id, incompatibleWith);
 
     setSaving(false);
     cancelForm();
@@ -153,9 +163,9 @@ export default function FishManager() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Bu balığı silmek istediğinize emin misiniz? Uyumluluk ilişkileri de silinecek.")) return;
+    if (!confirm("Bu türü silmek istediğinize emin misiniz? Uyumluluk ilişkileri de silinecek.")) return;
     const supabase = createClient();
-    await supabase.from("fish_species").delete().eq("id", id);
+    await supabase.from("shrimp_species").delete().eq("id", id);
     loadSpecies();
   }
 
@@ -165,13 +175,13 @@ export default function FishManager() {
     <div>
       <div className="flex items-center justify-between">
         <h2 className="font-mono text-[11px] uppercase tracking-[0.25em] text-ink-faint">
-          Balık Türleri ({species.length})
+          Kabuklular ({species.length})
         </h2>
         <button
           onClick={() => (formOpen ? cancelForm() : setFormOpen(true))}
           className="rounded-full bg-gold px-4 py-1.5 font-body text-xs font-semibold text-abyss"
         >
-          {formOpen ? "İptal" : "+ Yeni Balık"}
+          {formOpen ? "İptal" : "+ Yeni Tür"}
         </button>
       </div>
 
@@ -188,7 +198,7 @@ export default function FishManager() {
           </div>
           <FormField label="Not" value={form.note} onChange={(v) => setForm({ ...form, note: v })} />
           <div className="grid grid-cols-3 gap-3">
-            <FormField label="Min. Sürü" type="number" value={form.minShoalSize} onChange={(v) => setForm({ ...form, minShoalSize: v })} />
+            <FormField label="Min. Grup" type="number" value={form.minShoalSize} onChange={(v) => setForm({ ...form, minShoalSize: v })} />
             <FormField label="Min. Tank (L)" type="number" value={form.minTankLiters} onChange={(v) => setForm({ ...form, minTankLiters: v })} />
             <FormField label="Yetişkin Boy (cm)" type="number" value={form.adultSizeCm} onChange={(v) => setForm({ ...form, adultSizeCm: v })} />
           </div>
@@ -211,7 +221,7 @@ export default function FishManager() {
               Uyumsuz Olduğu Canlılar (balık, kabuklu veya bitki — işaretlenmeyenler otomatik uyumlu sayılır)
             </span>
             <CompatibilityPicker
-              excludeType="fish"
+              excludeType="shrimp"
               excludeId={editingId ?? undefined}
               selected={incompatibleWith}
               onChange={setIncompatibleWith}
@@ -223,30 +233,30 @@ export default function FishManager() {
             disabled={saving}
             className="w-full rounded-full bg-gold py-3 font-body text-sm font-semibold text-abyss disabled:opacity-50"
           >
-            {saving ? "Kaydediliyor..." : editingId ? "Değişiklikleri Kaydet" : "Balığı Yayına Al"}
+            {saving ? "Kaydediliyor..." : editingId ? "Değişiklikleri Kaydet" : "Türü Yayına Al"}
           </button>
         </form>
       )}
 
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {species.map((f) => (
-          <div key={f.id} className="relative overflow-hidden rounded-xl border border-abyss-border bg-abyss-surface">
+        {species.map((s) => (
+          <div key={s.id} className="relative overflow-hidden rounded-xl border border-abyss-border bg-abyss-surface">
             <div className="relative aspect-square">
-              <Image src={f.image} alt={f.name} fill className="object-cover" />
+              <Image src={s.image} alt={s.name} fill className="object-cover" />
             </div>
-            <p className="p-2 font-body text-xs text-ink">{f.name}</p>
+            <p className="p-2 font-body text-xs text-ink">{s.name}</p>
             <div className="absolute right-1.5 top-1.5 flex gap-1">
               <button
-                onClick={() => startEdit(f)}
+                onClick={() => startEdit(s)}
                 className="flex h-6 w-6 items-center justify-center rounded-full bg-abyss/80 text-aqua hover:bg-aqua hover:text-abyss"
-                aria-label={`${f.name} düzenle`}
+                aria-label={`${s.name} düzenle`}
               >
                 <EditIcon />
               </button>
               <button
-                onClick={() => handleDelete(f.id)}
+                onClick={() => handleDelete(s.id)}
                 className="flex h-6 w-6 items-center justify-center rounded-full bg-abyss/80 text-red-400 hover:bg-red-500 hover:text-white"
-                aria-label={`${f.name} sil`}
+                aria-label={`${s.name} sil`}
               >
                 ×
               </button>
