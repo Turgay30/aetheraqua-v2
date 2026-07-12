@@ -15,6 +15,7 @@ import PasswordChangeForm from "@/components/account/PasswordChangeForm";
 import DeleteAccountButton from "@/components/account/DeleteAccountButton";
 import OrderStatusTimeline from "@/components/account/OrderStatusTimeline";
 import Skeleton from "@/components/Skeleton";
+import AvatarUpload from "@/components/account/AvatarUpload";
 import Image from "next/image";
 import { buildTrackingUrl } from "@/lib/shipping";
 
@@ -70,7 +71,9 @@ export default function HesabimPage() {
     <div className="relative overflow-hidden bg-abyss bg-abyss-gradient">
       <DecorativeGlow />
       <section className="relative z-10 mx-auto max-w-3xl px-6 py-16">
-        <div className="flex items-center justify-between">
+        <AvatarUpload userId={user.id} fallbackName={user.email?.split("@")[0] ?? ""} />
+
+        <div className="mt-6 flex items-center justify-between">
           <div>
             <h1 className="font-display text-4xl text-ink">Hesabım</h1>
             <p className="mt-1 font-body text-sm text-ink-muted">{user.email}</p>
