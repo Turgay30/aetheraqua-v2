@@ -9,6 +9,7 @@ import ProductStockManager from "@/components/admin/ProductStockManager";
 import ProductManager from "@/components/admin/ProductManager";
 import FishManager from "@/components/admin/FishManager";
 import CouponManager from "@/components/admin/CouponManager";
+import BlogManager from "@/components/admin/BlogManager";
 import SalesSummary from "@/components/admin/SalesSummary";
 import PlantManager from "@/components/admin/PlantManager";
 import ShrimpManager from "@/components/admin/ShrimpManager";
@@ -52,7 +53,7 @@ export default function AdminPage() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
   const [orders, setOrders] = useState<Order[] | null>(null);
-  const [tab, setTab] = useState<"orders" | "products" | "fish" | "shrimp" | "plants" | "coupons">("orders");
+  const [tab, setTab] = useState<"orders" | "products" | "fish" | "shrimp" | "plants" | "coupons" | "rehberler">("orders");
 
   useEffect(() => {
     if (isLoading) return;
@@ -152,6 +153,14 @@ export default function AdminPage() {
         >
           Kuponlar
         </button>
+        <button
+          onClick={() => setTab("rehberler")}
+          className={`rounded-full px-5 py-2 font-body text-sm transition-colors ${
+            tab === "rehberler" ? "bg-gold text-abyss" : "border border-abyss-border text-ink-muted"
+          }`}
+        >
+          Rehberler
+        </button>
       </div>
 
       {tab === "orders" ? (
@@ -229,9 +238,13 @@ export default function AdminPage() {
         <div className="mt-8">
           <ShrimpManager />
         </div>
-      ) : (
+      ) : tab === "coupons" ? (
         <div className="mt-8">
           <CouponManager />
+        </div>
+      ) : (
+        <div className="mt-8">
+          <BlogManager />
         </div>
       )}
     </div>

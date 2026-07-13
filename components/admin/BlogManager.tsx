@@ -98,12 +98,12 @@ export default function BlogManager() {
       });
       setSaving(false);
       if (error) {
-        showToast("Yazı eklenirken bir sorun oluştu: " + error.message, "error");
+        showToast("Rehber eklenirken bir sorun oluştu: " + error.message, "error");
         return;
       }
     }
 
-    showToast(editingId ? "Yazı güncellendi" : "Yazı yayınlandı", "success");
+    showToast(editingId ? "Rehber güncellendi" : "Rehber yayınlandı", "success");
     cancelForm();
     load();
   }
@@ -116,10 +116,10 @@ export default function BlogManager() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Bu yazıyı silmek istediğinize emin misiniz?")) return;
+    if (!confirm("Bu rehberi silmek istediğinize emin misiniz?")) return;
     const supabase = createClient();
     await supabase.from("blog_posts").delete().eq("id", id);
-    showToast("Yazı silindi", "success");
+    showToast("Rehber silindi", "success");
     load();
   }
 
@@ -129,13 +129,13 @@ export default function BlogManager() {
     <div>
       <div className="flex items-center justify-between">
         <h2 className="font-mono text-[11px] uppercase tracking-[0.25em] text-ink-faint">
-          Blog Yazıları ({posts.length})
+          Rehberler ({posts.length})
         </h2>
         <button
           onClick={() => (formOpen ? cancelForm() : setFormOpen(true))}
           className="rounded-full bg-gold px-4 py-1.5 font-body text-xs font-semibold text-abyss"
         >
-          {formOpen ? "İptal" : "+ Yeni Yazı"}
+          {formOpen ? "İptal" : "+ Yeni Rehber"}
         </button>
       </div>
 
@@ -195,7 +195,7 @@ export default function BlogManager() {
             disabled={saving}
             className="w-full rounded-full bg-gold py-3 font-body text-sm font-semibold text-abyss disabled:opacity-50"
           >
-            {saving ? "Kaydediliyor..." : editingId ? "Değişiklikleri Kaydet" : "Yazıyı Oluştur"}
+            {saving ? "Kaydediliyor..." : editingId ? "Değişiklikleri Kaydet" : "Rehberi Oluştur"}
           </button>
         </form>
       )}

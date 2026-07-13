@@ -15,10 +15,15 @@ export const revalidate = 60;
 export default async function AkvaryumKutuphanesiPage() {
   const supabase = await createClient();
 
-  const [fishRes, shrimpRes, plantRes] = await Promise.all([
+  const [fishRes, shrimpRes, plantRes, guidesRes] = await Promise.all([
     supabase.from("fish_species").select("*").order("name"),
     supabase.from("shrimp_species").select("*").order("name"),
     supabase.from("plants").select("*").order("name"),
+    supabase
+      .from("blog_posts")
+      .select("slug, title, excerpt, cover_image")
+      .eq("published", true)
+      .order("created_at", { ascending: false }),
   ]);
 
   return (
@@ -37,6 +42,7 @@ export default async function AkvaryumKutuphanesiPage() {
             fish={fishRes.data ?? []}
             shrimp={shrimpRes.data ?? []}
             plants={plantRes.data ?? []}
+            guides={guidesRes.data ?? []}
           />
         </Suspense>
       </section>

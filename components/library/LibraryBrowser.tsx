@@ -25,12 +25,20 @@ type PlantRow = {
   co2_required: boolean;
 };
 
-type Category = "balik" | "bitki" | "kabuklu";
+type GuideRow = {
+  slug: string;
+  title: string;
+  excerpt: string;
+  cover_image: string | null;
+};
+
+type Category = "balik" | "bitki" | "kabuklu" | "rehber";
 
 const CATEGORY_LABELS: Record<Category, string> = {
   balik: "Balıklar",
   bitki: "Bitkiler",
   kabuklu: "Kabuklular",
+  rehber: "Rehberler",
 };
 
 const URL_TYPE_TO_CATEGORY: Record<string, Category> = {
@@ -47,10 +55,12 @@ export default function LibraryBrowser({
   fish,
   shrimp,
   plants,
+  guides,
 }: {
   fish: FishRow[];
   shrimp: FishRow[];
   plants: PlantRow[];
+  guides: GuideRow[];
 }) {
   const searchParams = useSearchParams();
   const urlType = searchParams.get("type");
@@ -73,6 +83,7 @@ export default function LibraryBrowser({
     balik: fish.length,
     bitki: plants.length,
     kabuklu: shrimp.length,
+    rehber: guides.length,
   };
 
   return (
@@ -142,8 +153,41 @@ export default function LibraryBrowser({
               />
             ))
           ))}
+
+        {category === "rehber" &&
+          (guides.length === 0 ? (
+            <EmptyState />
+          ) : (
+            guides.map((g) => <GuideCard key={g.slug} item={g} />)
+          ))}
       </div>
     </div>
+  );
+}
+
+function GuideCard({ item }: { item: GuideRow }) {
+  return (
+    <Link
+      href={`/akvaryum-kutuphanesi/rehber/${item.slug}`}
+      className="group overflow-hidden rounded-2xl border border-abyss-border bg-abyss-surface transition-transform hover:-translate-y-1"
+    >
+      {item.cover_image && (
+        <div className="relative aspect-[16/9] w-full overflow-hidden">
+          <Image
+            src={item.cover_image}
+            alt={item.title}
+            fill
+            className="object-cover transition-transform duration-700 group-hover:scale-105"
+          />
+        </div>
+      )}
+      <div className="p-5">
+        <p className="font-display text-lg text-ink">{item.title}</p>
+        {item.excerpt && (
+          <p className="mt-2 line-clamp-2 font-body text-sm text-ink-muted">{item.excerpt}</p>
+        )}
+      </div>
+    </Link>
   );
 }
 

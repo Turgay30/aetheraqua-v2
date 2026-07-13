@@ -25,6 +25,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const supabase = await createClient();
 
+    const { data: guides } = await supabase
+      .from("blog_posts")
+      .select("slug, created_at")
+      .eq("published", true);
+
+    guides?.forEach((g) => {
+      entries.push({ url: `${baseUrl}/akvaryum-kutuphanesi/rehber/${g.slug}`, lastModified: new Date(g.created_at) });
+    });
+
     const { data: products } = await supabase
       .from("products")
       .select("product_id")
