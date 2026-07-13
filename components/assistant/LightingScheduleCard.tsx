@@ -3,8 +3,22 @@
 import { useState } from "react";
 import Link from "next/link";
 import { LightingSchedule } from "@/lib/lighting-schedule";
-import { kelvinToRgb } from "@/lib/kelvin-color";
 import { useToast } from "@/components/ToastProvider";
+
+// Gerçekçi Kelvin renkleri birbirine çok yakın (hepsi beyaza yakın) düştüğü için,
+// zaman çizelgesinde net ayırt edilebilmesi adına stilize/abartılı bir renk paleti
+// kullanıyoruz — Kelvin değerleri metin olarak zaten doğru şekilde gösteriliyor.
+const PHASE_VISUAL_COLORS: Record<string, string> = {
+  "Gün Doğumu": "#FF9142",
+  Gündüz: "#7DD8FF",
+  "Öğle Zirvesi": "#FFFFFF",
+  "Gün Batımı": "#FF5C5C",
+  Gece: "#1A2540",
+};
+
+function phaseColor(label: string): string {
+  return PHASE_VISUAL_COLORS[label] ?? "#7DD8FF";
+}
 
 export default function LightingScheduleCard({ schedule }: { schedule: LightingSchedule }) {
   const { showToast } = useToast();
@@ -31,9 +45,9 @@ export default function LightingScheduleCard({ schedule }: { schedule: LightingS
   schedule.phases.forEach((p) => {
     const [start] = p.time.split("–");
     const pct = (toMinutes(start) / (24 * 60)) * 100;
-    gradientStops.push(`${kelvinToRgb(p.kelvin)} ${pct}%`);
+    gradientStops.push(`${phaseColor(p.label)} ${pct}%`);
   });
-  gradientStops.push(`${kelvinToRgb(schedule.phases[0].kelvin)} 100%`);
+  gradientStops.push(`${phaseColor(schedule.phases[0].label)} 100%`);
   const gradientCss = `linear-gradient(90deg, ${gradientStops.join(", ")})`;
 
   return (
@@ -71,8 +85,8 @@ export default function LightingScheduleCard({ schedule }: { schedule: LightingS
                 <span
                   className="h-5 w-5 flex-shrink-0 rounded-full ring-1 ring-white/10"
                   style={{
-                    backgroundColor: kelvinToRgb(p.kelvin),
-                    boxShadow: p.kelvin > 0 ? `0 0 12px ${kelvinToRgb(p.kelvin)}` : "none",
+                    backgroundColor: phaseColor(p.label),
+                    boxShadow: p.kelvin > 0 ? `0 0 12px ${phaseColor(p.label)}` : "none",
                   }}
                 />
                 <div>

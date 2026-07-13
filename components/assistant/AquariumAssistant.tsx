@@ -155,7 +155,8 @@ export default function AquariumAssistant() {
     const levels = plants
       .filter((p) => selectedPlantIds.has(p.id))
       .map((p) => p.light_level as LightLevel);
-    return buildLightingSchedule(levels);
+    // Bitki seçilmese bile genel/varsayılan bir program her zaman gösterilsin
+    return buildLightingSchedule(levels.length > 0 ? levels : ["orta"]);
   }, [plants, selectedPlantIds]);
 
   const stocking = useMemo(() => assessStocking(totalAdultCm, liters), [totalAdultCm, liters]);
@@ -395,6 +396,11 @@ export default function AquariumAssistant() {
         )}
       </div>
 
+      {/* Aydınlatma Programı — her zaman görünür, seçimden bağımsız */}
+      <div className="mb-12">
+        <LightingScheduleCard schedule={lightingSchedule!} />
+      </div>
+
       {/* 3-4. Stoklama + Ekipman */}
       {hasSelection && (
         <div id="stoklama-detay" className="scroll-mt-24 pb-16">
@@ -403,11 +409,6 @@ export default function AquariumAssistant() {
             <EquipmentRecommendation equipment={equipment} />
           </div>
 
-          {lightingSchedule && (
-            <div className="mt-6">
-              <LightingScheduleCard schedule={lightingSchedule} />
-            </div>
-          )}
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <ShareResult
               liters={liters}
