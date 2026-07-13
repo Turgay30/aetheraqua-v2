@@ -908,4 +908,6 @@ $$ language plpgsql security definer;
 
 grant execute on function public.apply_referral(text) to authenticated;
 
+alter table public.reviews add column if not exists photo_url text;
+
 NOTIFY pgrst, 'reload schema';

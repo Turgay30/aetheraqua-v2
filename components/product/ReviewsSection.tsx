@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
+import { uploadImage } from "@/lib/supabase/storage";
 import StarRating from "@/components/product/StarRating";
+import Image from "next/image";
 
 type Theme = "apollo" | "helios";
 
@@ -14,6 +16,7 @@ type Review = {
   reviewer_name: string;
   rating: number;
   comment: string | null;
+  photo_url: string | null;
   created_at: string;
 };
 
@@ -38,6 +41,7 @@ export default function ReviewsSection({ productId, theme }: { productId: Theme;
   const [reviews, setReviews] = useState<Review[] | null>(null);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
 
   async function loadReviews() {
@@ -64,6 +68,13 @@ export default function ReviewsSection({ productId, theme }: { productId: Theme;
     e.preventDefault();
     if (!user) return;
     setSaving(true);
+
+    let photoUrl = myReview?.photo_url ?? null;
+    if (photoFile) {
+      const uploaded = await uploadImage(photoFile, "reviews");
+      if (uploaded) photoUrl = uploaded;
+    }
+
     const supabase = createClient();
     await supabase.from("reviews").upsert(
       {
@@ -72,12 +83,14 @@ export default function ReviewsSection({ productId, theme }: { productId: Theme;
         reviewer_name: (user.user_metadata?.full_name as string) || "Müşteri",
         rating,
         comment: comment.trim() || null,
+        photo_url: photoUrl,
       },
       { onConflict: "product_id,user_id" }
     );
     setSaving(false);
     setComment("");
     setRating(5);
+    setPhotoFile(null);
     loadReviews();
   }
 
@@ -114,6 +127,11 @@ export default function ReviewsSection({ productId, theme }: { productId: Theme;
             </div>
             {r.comment && (
               <p className={`mt-2 font-body text-sm ${s.muted}`}>{r.comment}</p>
+            )}
+            {r.photo_url && (
+              <div className="relative mt-3 h-32 w-32 overflow-hidden rounded-lg">
+                <Image src={r.photo_url} alt="Müşteri fotoğrafı" fill className="object-cover" />
+              </div>
             )}
             <p className="mt-2 font-body text-[11px] text-ink-faint">
               {new Date(r.created_at).toLocaleDateString("tr-TR", {
@@ -158,6 +176,15 @@ export default function ReviewsSection({ productId, theme }: { productId: Theme;
             rows={3}
             className="mt-3 w-full rounded-lg border border-abyss-border bg-abyss px-3 py-2 font-body text-sm text-ink outline-none focus-visible:border-aqua"
           />
+          <label className="mt-3 flex items-center gap-2 font-body text-xs text-ink-faint">
+            <span>📷 Fotoğraf ekle (opsiyonel):</span>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setPhotoFile(e.target.files?.[0] ?? null)}
+              className="font-body text-xs text-ink-muted"
+            />
+          </label>
           <button
             type="submit"
             disabled={saving}

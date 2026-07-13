@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
+import { uploadImage } from "@/lib/supabase/storage";
 import { hexToRgba } from "@/lib/color-utils";
 import { useIsInView } from "@/lib/useIsInView";
 import MobileStickyBar from "@/components/product/MobileStickyBar";
@@ -398,10 +399,11 @@ function RatingSummary({ productId }: { productId: string }) {
 function Reviews({ productId, accent }: { productId: string; accent: string }) {
   const { user } = useAuth();
   const [reviews, setReviews] = useState<
-    { id: string; user_id: string; reviewer_name: string; rating: number; comment: string | null; created_at: string }[] | null
+    { id: string; user_id: string; reviewer_name: string; rating: number; comment: string | null; photo_url: string | null; created_at: string }[] | null
   >(null);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
 
   async function load() {
@@ -422,6 +424,13 @@ function Reviews({ productId, accent }: { productId: string; accent: string }) {
     e.preventDefault();
     if (!user) return;
     setSaving(true);
+
+    let photoUrl: string | null = reviews?.find((r) => r.user_id === user.id)?.photo_url ?? null;
+    if (photoFile) {
+      const uploaded = await uploadImage(photoFile, "reviews");
+      if (uploaded) photoUrl = uploaded;
+    }
+
     const supabase = createClient();
     await supabase.from("reviews").upsert(
       {
@@ -430,11 +439,13 @@ function Reviews({ productId, accent }: { productId: string; accent: string }) {
         reviewer_name: (user.user_metadata?.full_name as string) || "Müşteri",
         rating,
         comment: comment.trim() || null,
+        photo_url: photoUrl,
       },
       { onConflict: "product_id,user_id" }
     );
     setSaving(false);
     setComment("");
+    setPhotoFile(null);
     load();
   }
 
@@ -458,6 +469,11 @@ function Reviews({ productId, accent }: { productId: string; accent: string }) {
               <StarRating rating={r.rating} size={13} />
             </div>
             {r.comment && <p className="mt-2 font-body text-sm text-ink-muted">{r.comment}</p>}
+            {r.photo_url && (
+              <div className="relative mt-3 h-32 w-32 overflow-hidden rounded-lg">
+                <Image src={r.photo_url} alt="Müşteri fotoğrafı" fill className="object-cover" />
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -473,6 +489,15 @@ function Reviews({ productId, accent }: { productId: string; accent: string }) {
               </button>
             ))}
           </div>
+          <label className="mt-3 flex items-center gap-2 font-body text-xs text-ink-faint">
+            <span>📷 Fotoğraf ekle (opsiyonel):</span>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setPhotoFile(e.target.files?.[0] ?? null)}
+              className="font-body text-xs text-ink-muted"
+            />
+          </label>
           <textarea
             value={comment}
             onChange={(e) => setComment(e.target.value)}
