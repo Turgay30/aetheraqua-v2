@@ -29,6 +29,9 @@ export const metadata: Metadata = {
     description: siteDescription,
     images: ["/images/ruins-bg.jpg"],
   },
+  verification: {
+    google: "Uuj1_kaGYsYhlTj0akTJk0bgHclUrlvd2kuLxrL",
+  },
 };
 
 export default function RootLayout({
