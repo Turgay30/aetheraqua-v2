@@ -1,14 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import DecorativeGlow from "@/components/DecorativeGlow";
 import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 
 export default function KayitPage() {
+  return (
+    <Suspense fallback={null}>
+      <KayitForm />
+    </Suspense>
+  );
+}
+
+function KayitForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const refCode = searchParams.get("ref");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,6 +42,13 @@ export default function KayitPage() {
       await supabase
         .from("profiles")
         .upsert({ id: data.user.id, full_name: name, marketing_consent: marketingConsent });
+
+      if (refCode) {
+        const { data: coupon } = await supabase.rpc("apply_referral", { p_ref_code: refCode });
+        if (coupon) {
+          sessionStorage.setItem("aetheraqua_welcome_coupon", coupon);
+        }
+      }
     }
 
     setLoading(false);
@@ -57,6 +74,15 @@ export default function KayitPage() {
         <p className="mt-2 font-body text-sm text-ink-muted">
           Siparişlerinizi takip etmek için ücretsiz bir hesap oluşturun.
         </p>
+
+        {refCode && (
+          <div className="mt-4 rounded-xl border border-aqua/30 bg-aqua/5 p-3">
+            <p className="font-body text-xs text-aqua">
+              🎁 Bir arkadaşınızın davetiyle geliyorsunuz — hesap oluşturunca size özel %10 indirim
+              kuponu tanımlanacak.
+            </p>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-4">
           <Field label="Ad Soyad" value={name} onChange={setName} required />

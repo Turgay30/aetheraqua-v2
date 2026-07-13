@@ -14,6 +14,8 @@ import StockingSummary from "@/components/assistant/StockingSummary";
 import EquipmentRecommendation from "@/components/assistant/EquipmentRecommendation";
 import StickySummaryBar from "@/components/assistant/StickySummaryBar";
 import ShareResult from "@/components/assistant/ShareResult";
+import LightingScheduleCard from "@/components/assistant/LightingScheduleCard";
+import { buildLightingSchedule, LightLevel } from "@/lib/lighting-schedule";
 
 const SESSION_KEY = "aetheraqua_assistant_state";
 
@@ -144,6 +146,13 @@ export default function AquariumAssistant() {
       return item ? sum + item.adultSizeCm * count : sum;
     }, 0);
   }, [selection, fish, shrimp]);
+
+  const lightingSchedule = useMemo(() => {
+    const levels = plants
+      .filter((p) => selectedPlantIds.has(p.id))
+      .map((p) => p.light_level as LightLevel);
+    return buildLightingSchedule(levels);
+  }, [plants, selectedPlantIds]);
 
   const stocking = useMemo(() => assessStocking(totalAdultCm, liters), [totalAdultCm, liters]);
   const equipment = useMemo(() => recommendEquipment(liters, stocking.level), [liters, stocking.level]);
@@ -359,6 +368,12 @@ export default function AquariumAssistant() {
             <StockingSummary result={stocking} minTankViolations={minTankViolations} />
             <EquipmentRecommendation equipment={equipment} />
           </div>
+
+          {lightingSchedule && (
+            <div className="mt-6">
+              <LightingScheduleCard schedule={lightingSchedule} />
+            </div>
+          )}
           <div className="mt-6">
             <ShareResult
               liters={liters}

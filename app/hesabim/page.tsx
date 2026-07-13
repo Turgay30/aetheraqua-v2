@@ -16,6 +16,8 @@ import DeleteAccountButton from "@/components/account/DeleteAccountButton";
 import OrderStatusTimeline from "@/components/account/OrderStatusTimeline";
 import Skeleton from "@/components/Skeleton";
 import AvatarUpload from "@/components/account/AvatarUpload";
+import ReferralCard from "@/components/account/ReferralCard";
+import { useToast } from "@/components/ToastProvider";
 import Image from "next/image";
 import { buildTrackingUrl } from "@/lib/shipping";
 
@@ -43,8 +45,18 @@ type Order = {
 export default function HesabimPage() {
   const router = useRouter();
   const { user, isLoading, signOut } = useAuth();
+  const { showToast } = useToast();
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [ordersLoading, setOrdersLoading] = useState(true);
+
+  useEffect(() => {
+    const coupon = sessionStorage.getItem("aetheraqua_welcome_coupon");
+    if (coupon) {
+      showToast(`Hoş geldiniz! %10 indirim kuponunuz: ${coupon}`, "success");
+      sessionStorage.removeItem("aetheraqua_welcome_coupon");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -207,6 +219,13 @@ export default function HesabimPage() {
 
         <div className="mt-12">
           <AddressBook userId={user.id} />
+        </div>
+
+        <div className="mt-12">
+          <h2 className="mb-4 font-mono text-[11px] uppercase tracking-[0.25em] text-ink-faint">
+            Arkadaşını Davet Et
+          </h2>
+          <ReferralCard userId={user.id} />
         </div>
 
         <div className="mt-12">

@@ -806,4 +806,106 @@ alter table public.order_items add column if not exists image_url text;
 
 alter table public.profiles add column if not exists avatar_url text;
 
+-- ============================================
+-- 24. DAVET / REFERANS PROGRAMI
+-- ============================================
+alter table public.profiles add column if not exists referral_code text unique;
+
+create table if not exists public.referrals (
+  id uuid primary key default gen_random_uuid(),
+  referrer_id uuid not null references auth.users(id) on delete cascade,
+  referred_user_id uuid not null references auth.users(id) on delete cascade,
+  referrer_coupon_code text,
+  referred_coupon_code text,
+  created_at timestamptz not null default now(),
+  unique (referred_user_id)
+);
+
+alter table public.referrals enable row level security;
+
+drop policy if exists "Kullanıcı kendi referanslarını görebilir" on public.referrals;
+create policy "Kullanıcı kendi referanslarını görebilir"
+  on public.referrals for select
+  to authenticated
+  using (auth.uid() = referrer_id or auth.uid() = referred_user_id);
+
+drop policy if exists "Kullanıcı referans oluşturabilir" on public.referrals;
+create policy "Kullanıcı referans oluşturabilir"
+  on public.referrals for insert
+  to authenticated
+  with check (auth.uid() = referred_user_id);
+
+grant select, insert on public.referrals to authenticated;
+
+-- Her profile için benzersiz bir davet kodu üretir (örn. AA-7F3K2Q)
+create or replace function public.generate_referral_code() returns text as $$
+declare
+  code text;
+begin
+  code := 'AA-' || upper(substring(md5(random()::text) from 1 for 6));
+  return code;
+end;
+$$ language plpgsql;
+
+-- Yeni profil oluşturulduğunda otomatik davet kodu ata
+create or replace function public.set_referral_code() returns trigger as $$
+begin
+  if new.referral_code is null then
+    new.referral_code := public.generate_referral_code();
+  end if;
+  return new;
+end;
+$$ language plpgsql;
+
+drop trigger if exists trg_set_referral_code on public.profiles;
+create trigger trg_set_referral_code
+  before insert on public.profiles
+  for each row execute function public.set_referral_code();
+
+-- Mevcut profillerin de kodu olsun
+update public.profiles set referral_code = public.generate_referral_code() where referral_code is null;
+
+-- Bir davet kodunu uygular: referans eden ve edilen kişiye birer tek kullanımlık
+-- %10 indirim kuponu tanımlar. security definer ile çalışır çünkü normal
+-- kullanıcıların coupons tablosuna doğrudan yazma izni yoktur.
+create or replace function public.apply_referral(p_ref_code text)
+returns text as $$
+declare
+  v_referrer_id uuid;
+  v_referred_id uuid := auth.uid();
+  v_referrer_coupon text;
+  v_referred_coupon text;
+begin
+  if v_referred_id is null then
+    raise exception 'Giriş yapılmamış';
+  end if;
+
+  select id into v_referrer_id from public.profiles where referral_code = p_ref_code;
+
+  if v_referrer_id is null or v_referrer_id = v_referred_id then
+    return null;
+  end if;
+
+  if exists (select 1 from public.referrals where referred_user_id = v_referred_id) then
+    return null;
+  end if;
+
+  v_referrer_coupon := 'DAVET-' || upper(substring(md5(random()::text) from 1 for 5));
+  v_referred_coupon := 'HOSGELDIN-' || upper(substring(md5(random()::text) from 1 for 5));
+
+  insert into public.coupons (code, type, value, is_active, usage_limit)
+  values (v_referrer_coupon, 'percent', 10, true, 1);
+
+  insert into public.coupons (code, type, value, is_active, usage_limit)
+  values (v_referred_coupon, 'percent', 10, true, 1);
+
+  insert into public.referrals (referrer_id, referred_user_id, referrer_coupon_code, referred_coupon_code)
+  values (v_referrer_id, v_referred_id, v_referrer_coupon, v_referred_coupon);
+
+  return v_referred_coupon;
+end;
+$$ language plpgsql security definer;
+
+grant execute on function public.apply_referral(text) to authenticated;
+
 NOTIFY pgrst, 'reload schema';
