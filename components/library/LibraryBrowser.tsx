@@ -175,9 +175,16 @@ function GuideCard({ item }: { item: GuideRow }) {
         <div className="relative aspect-[16/9] w-full overflow-hidden bg-abyss">
           <Image
             src={item.cover_image}
+            alt=""
+            fill
+            aria-hidden
+            className="scale-110 object-cover opacity-50 blur-2xl"
+          />
+          <Image
+            src={item.cover_image}
             alt={item.title}
             fill
-            className="object-contain transition-transform duration-700 group-hover:scale-105"
+            className="relative object-contain transition-transform duration-700 group-hover:scale-105"
           />
         </div>
       )}
