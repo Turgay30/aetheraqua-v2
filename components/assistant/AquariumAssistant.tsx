@@ -262,6 +262,14 @@ export default function AquariumAssistant() {
 
   return (
     <div className={`mx-auto max-w-6xl px-6 ${hasSelection ? "pb-20" : "pb-24"}`}>
+      {/* Kısa tanıtım */}
+      <div className="mb-8 grid grid-cols-2 gap-3 rounded-2xl border border-abyss-border bg-abyss-surface p-5 sm:grid-cols-4">
+        <FeaturePoint icon="🐠" text="Uyumluluk kontrolü" />
+        <FeaturePoint icon="📐" text="Stoklama & ekipman önerisi" />
+        <FeaturePoint icon="☀️" text="Aydınlatma programı" />
+        <FeaturePoint icon="📚" text="Kütüphaneden bilgi al" />
+      </div>
+
       {/* 0. Mod seçimi */}
       <div className="mb-10 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-2">
@@ -453,5 +461,14 @@ function LibraryIcon() {
       />
       <path d="M17.5 3v17" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
     </svg>
+  );
+}
+
+function FeaturePoint({ icon, text }: { icon: string; text: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-base">{icon}</span>
+      <span className="font-body text-xs text-ink-muted">{text}</span>
+    </div>
   );
 }
