@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
-type Result = { type: "ürün" | "blog"; title: string; subtitle: string; href: string };
+type Result = { type: "ürün"; title: string; subtitle: string; href: string };
 
 const STATIC_PRODUCTS: Result[] = [
   { type: "ürün", title: "Apollo", subtitle: "Işığın Efendisi — WRGB akvaryum aydınlatması", href: "/apollo" },
@@ -36,10 +36,11 @@ export default function SearchModal({ onClose }: { onClose: () => void }) {
       const supabase = createClient();
       const q = query.trim();
 
-      const [productsRes, blogRes] = await Promise.all([
-        supabase.from("products").select("product_id, name, tagline").eq("is_builtin", false).ilike("name", `%${q}%`),
-        supabase.from("blog_posts").select("slug, title, excerpt").eq("published", true).ilike("title", `%${q}%`),
-      ]);
+      const productsRes = await supabase
+        .from("products")
+        .select("product_id, name, tagline")
+        .eq("is_builtin", false)
+        .ilike("name", `%${q}%`);
 
       const staticMatches = STATIC_PRODUCTS.filter(
         (p) => p.title.toLowerCase().includes(q.toLowerCase()) || p.subtitle.toLowerCase().includes(q.toLowerCase())
@@ -52,14 +53,7 @@ export default function SearchModal({ onClose }: { onClose: () => void }) {
         href: `/urun/${p.product_id}`,
       }));
 
-      const blogMatches: Result[] = (blogRes.data ?? []).map((b) => ({
-        type: "blog",
-        title: b.title,
-        subtitle: b.excerpt ?? "",
-        href: `/blog/${b.slug}`,
-      }));
-
-      setResults([...staticMatches, ...productMatches, ...blogMatches]);
+      setResults([...staticMatches, ...productMatches]);
       setLoading(false);
     }, 250);
 

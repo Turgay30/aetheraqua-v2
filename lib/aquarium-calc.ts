@@ -1,9 +1,35 @@
-export function calcLitersFromDimensions(
+/**
+ * Bir akvaryumun "kutu hacmi" (brüt) — uzunluk × genişlik × yükseklik.
+ * Bu, tankın üretici tarafından belirtilen nominal hacmidir ama gerçek
+ * su hacmi değildir.
+ */
+export function calcGrossLitersFromDimensions(
   lengthCm: number,
   widthCm: number,
   heightCm: number
 ): number {
   return (lengthCm * widthCm * heightCm) / 1000;
+}
+
+/**
+ * Hiçbir akvaryum ağzına kadar doldurulmaz — ekipman, buharlaşma payı ve
+ * sıçrama riski için genelde su seviyesi camın ~%90'ında bırakılır. Stoklama
+ * ve ekipman hesaplamaları GERÇEK su hacmine göre yapılmalı, brüt kutu
+ * hacmine göre değil; aksi halde tank olduğundan daha ferah gösterilir.
+ */
+const FILL_LEVEL_FACTOR = 0.9;
+
+export function calcEffectiveLiters(grossLiters: number): number {
+  return grossLiters * FILL_LEVEL_FACTOR;
+}
+
+/** Geriye dönük uyumluluk için: doğrudan boyuttan gerçek (dolum paylı) su hacmini döndürür. */
+export function calcLitersFromDimensions(
+  lengthCm: number,
+  widthCm: number,
+  heightCm: number
+): number {
+  return calcEffectiveLiters(calcGrossLitersFromDimensions(lengthCm, widthCm, heightCm));
 }
 
 export type StockingResult = {

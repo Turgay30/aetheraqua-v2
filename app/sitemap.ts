@@ -6,9 +6,9 @@ const staticRoutes = [
   "/apollo",
   "/helios",
   "/akvaryum-asistani",
+  "/akvaryum-kutuphanesi",
   "/hakkimizda",
   "/iletisim",
-  "/blog",
   "/gizlilik-politikasi",
   "/mesafeli-satis-sozlesmesi",
   "/kullanim-sartlari",
@@ -24,18 +24,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   try {
     const supabase = await createClient();
-
-    const { data: posts } = await supabase
-      .from("blog_posts")
-      .select("slug, created_at")
-      .eq("published", true);
-
-    posts?.forEach((post) => {
-      entries.push({
-        url: `${baseUrl}/blog/${post.slug}`,
-        lastModified: new Date(post.created_at),
-      });
-    });
 
     const { data: products } = await supabase
       .from("products")

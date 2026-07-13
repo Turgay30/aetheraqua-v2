@@ -1,31 +1,34 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { calcLitersFromDimensions } from "@/lib/aquarium-calc";
+import { calcGrossLitersFromDimensions, calcEffectiveLiters } from "@/lib/aquarium-calc";
 
 export default function TankSizeInput({
   onChange,
+  initialLiters,
 }: {
   onChange: (liters: number) => void;
+  initialLiters?: number;
 }) {
-  const [mode, setMode] = useState<"dimensions" | "liters">("dimensions");
+  const [mode, setMode] = useState<"dimensions" | "liters">(initialLiters ? "liters" : "dimensions");
   const [length, setLength] = useState("60");
   const [width, setWidth] = useState("30");
   const [height, setHeight] = useState("35");
-  const [directLiters, setDirectLiters] = useState("60");
-
-  const dimensionLiters = calcLitersFromDimensions(
-    Number(length) || 0,
-    Number(width) || 0,
-    Number(height) || 0
+  const [directLiters, setDirectLiters] = useState(
+    initialLiters ? String(Math.round(initialLiters / 0.9)) : "60"
   );
 
-  const liters = mode === "dimensions" ? dimensionLiters : Number(directLiters) || 0;
+  const grossLiters =
+    mode === "dimensions"
+      ? calcGrossLitersFromDimensions(Number(length) || 0, Number(width) || 0, Number(height) || 0)
+      : Number(directLiters) || 0;
+
+  const effectiveLiters = calcEffectiveLiters(grossLiters);
 
   useEffect(() => {
-    onChange(liters);
+    onChange(effectiveLiters);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [liters]);
+  }, [effectiveLiters]);
 
   return (
     <div className="rounded-2xl border border-abyss-border bg-abyss-surface p-6">
@@ -59,12 +62,26 @@ export default function TankSizeInput({
           <Field label="Yükseklik" value={height} onChange={setHeight} />
         </div>
       ) : (
-        <Field label="Litre" value={directLiters} onChange={setDirectLiters} wide />
+        <Field
+          label="Litre (tankın nominal/kutu hacmi)"
+          value={directLiters}
+          onChange={setDirectLiters}
+          wide
+        />
       )}
 
-      <p className="mt-5 font-body text-sm text-ink-muted">
-        Tank hacmi:{" "}
-        <span className="font-display text-xl text-aqua">{liters.toFixed(0)} litre</span>
+      <div className="mt-5 flex flex-wrap items-baseline gap-x-6 gap-y-1">
+        <p className="font-body text-sm text-ink-muted">
+          Kutu hacmi: <span className="text-ink">{grossLiters.toFixed(0)} L</span>
+        </p>
+        <p className="font-body text-sm text-ink-muted">
+          Gerçek su hacmi:{" "}
+          <span className="font-display text-xl text-aqua">{effectiveLiters.toFixed(0)} litre</span>
+        </p>
+      </div>
+      <p className="mt-2 font-body text-xs text-ink-faint">
+        Hesaplamalar, ekipman ve buharlaşma payı için camın ~%90&apos;ına kadar doldurulduğu
+        varsayımıyla gerçek su hacmine göre yapılır.
       </p>
     </div>
   );

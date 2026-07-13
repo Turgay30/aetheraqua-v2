@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import Skeleton from "@/components/Skeleton";
 import { FishSpecies } from "@/lib/fish-data";
@@ -13,6 +14,25 @@ import StockingSummary from "@/components/assistant/StockingSummary";
 import EquipmentRecommendation from "@/components/assistant/EquipmentRecommendation";
 import StickySummaryBar from "@/components/assistant/StickySummaryBar";
 import ShareResult from "@/components/assistant/ShareResult";
+
+const SESSION_KEY = "aetheraqua_assistant_state";
+
+type PersistedState = {
+  liters: number;
+  mode: Mode;
+  selection: Record<string, number>;
+  selectedPlantIds: string[];
+};
+
+function loadPersistedState(): PersistedState | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
 
 type Plant = {
   id: string;
@@ -33,8 +53,10 @@ const MODE_LABELS: Record<Mode, string> = {
 };
 
 export default function AquariumAssistant() {
-  const [liters, setLiters] = useState(60);
-  const [mode, setMode] = useState<Mode>("karma");
+  const persisted = useMemo(() => loadPersistedState(), []);
+
+  const [liters, setLiters] = useState(persisted?.liters ?? 60);
+  const [mode, setMode] = useState<Mode>(persisted?.mode ?? "karma");
 
   const [fish, setFish] = useState<FishSpecies[]>([]);
   const [shrimp, setShrimp] = useState<FishSpecies[]>([]);
@@ -43,8 +65,27 @@ export default function AquariumAssistant() {
   const [loading, setLoading] = useState(true);
 
   // Birleşik seçim: "fish:id" veya "shrimp:id" -> adet. Bitkiler ayrı bir Set (adet yok).
-  const [selection, setSelection] = useState<Record<CompatibilityKey, number>>({});
-  const [selectedPlantIds, setSelectedPlantIds] = useState<Set<string>>(new Set());
+  const [selection, setSelection] = useState<Record<CompatibilityKey, number>>(
+    (persisted?.selection as Record<CompatibilityKey, number>) ?? {}
+  );
+  const [selectedPlantIds, setSelectedPlantIds] = useState<Set<string>>(
+    new Set(persisted?.selectedPlantIds ?? [])
+  );
+
+  // Seçim durumunu oturum belleğine kaydet — Kütüphane'ye gidip geri dönüldüğünde korunur.
+  useEffect(() => {
+    const state: PersistedState = {
+      liters,
+      mode,
+      selection,
+      selectedPlantIds: Array.from(selectedPlantIds),
+    };
+    try {
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(state));
+    } catch {
+      // sessionStorage erişilemezse sessizce yok say
+    }
+  }, [liters, mode, selection, selectedPlantIds]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -175,18 +216,29 @@ export default function AquariumAssistant() {
   return (
     <div className={`mx-auto max-w-6xl px-6 ${hasSelection ? "pb-20" : "pb-24"}`}>
       {/* 0. Mod seçimi */}
-      <div className="mb-10 flex flex-wrap gap-2">
-        {(Object.keys(MODE_LABELS) as Mode[]).map((m) => (
-          <button
-            key={m}
-            onClick={() => setMode(m)}
-            className={`rounded-full px-5 py-2 font-body text-sm transition-colors ${
-              mode === m ? "bg-aqua text-abyss" : "border border-abyss-border text-ink-muted hover:text-ink"
-            }`}
-          >
-            {MODE_LABELS[m]}
-          </button>
-        ))}
+      <div className="mb-10 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap gap-2">
+          {(Object.keys(MODE_LABELS) as Mode[]).map((m) => (
+            <button
+              key={m}
+              onClick={() => setMode(m)}
+              className={`rounded-full px-5 py-2 font-body text-sm transition-colors ${
+                mode === m ? "bg-aqua text-abyss" : "border border-abyss-border text-ink-muted hover:text-ink"
+              }`}
+            >
+              {MODE_LABELS[m]}
+            </button>
+          ))}
+        </div>
+
+        <Link
+          href="/akvaryum-kutuphanesi"
+          className="flex items-center gap-2 rounded-full border border-abyss-border px-4 py-2 font-body text-xs text-ink-muted transition-colors hover:border-gold hover:text-gold"
+          title="Akvaryum Kütüphanesi"
+        >
+          <LibraryIcon />
+          <span className="hidden sm:inline">Kütüphane</span>
+        </Link>
       </div>
 
       {/* 1. Tank ölçüsü */}
@@ -194,7 +246,7 @@ export default function AquariumAssistant() {
         <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.25em] text-ink-faint">
           1 · Tank Ölçünüzü Girin
         </p>
-        <TankSizeInput onChange={setLiters} />
+        <TankSizeInput onChange={setLiters} initialLiters={persisted?.liters} />
       </div>
 
       {/* 2. Canlı seçimi */}
@@ -323,5 +375,20 @@ export default function AquariumAssistant() {
         />
       )}
     </div>
+  );
+}
+
+function LibraryIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M4 19.5V5a2 2 0 012-2h11.5v17H6a2 2 0 00-2 2.5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M17.5 3v17" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
   );
 }
