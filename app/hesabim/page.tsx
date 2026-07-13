@@ -17,6 +17,7 @@ import OrderStatusTimeline from "@/components/account/OrderStatusTimeline";
 import Skeleton from "@/components/Skeleton";
 import AvatarUpload from "@/components/account/AvatarUpload";
 import ReferralCard from "@/components/account/ReferralCard";
+import SavedAquariumsList from "@/components/account/SavedAquariumsList";
 import { useToast } from "@/components/ToastProvider";
 import Image from "next/image";
 import { buildTrackingUrl } from "@/lib/shipping";
@@ -216,6 +217,13 @@ export default function HesabimPage() {
           Favorilerim
         </h2>
         <FavoritesList userId={user.id} />
+
+        <div className="mt-12">
+          <h2 className="mb-4 font-mono text-[11px] uppercase tracking-[0.25em] text-ink-faint">
+            Akvaryumlarım
+          </h2>
+          <SavedAquariumsList userId={user.id} />
+        </div>
 
         <div className="mt-12">
           <AddressBook userId={user.id} />

@@ -16,6 +16,8 @@ import StickySummaryBar from "@/components/assistant/StickySummaryBar";
 import ShareResult from "@/components/assistant/ShareResult";
 import LightingScheduleCard from "@/components/assistant/LightingScheduleCard";
 import { buildLightingSchedule, LightLevel } from "@/lib/lighting-schedule";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { useToast } from "@/components/ToastProvider";
 
 const SESSION_KEY = "aetheraqua_assistant_state";
 
@@ -55,6 +57,8 @@ const MODE_LABELS: Record<Mode, string> = {
 };
 
 export default function AquariumAssistant() {
+  const { user } = useAuth();
+  const { showToast } = useToast();
   const persisted = useMemo(() => loadPersistedState(), []);
 
   const [liters, setLiters] = useState(persisted?.liters ?? 60);
@@ -208,6 +212,28 @@ export default function AquariumAssistant() {
   function clearAll() {
     setSelection({});
     setSelectedPlantIds(new Set());
+  }
+
+  async function saveAquarium() {
+    if (!user) return;
+    const name = window.prompt("Bu akvaryum kurulumuna bir isim verin:", "Akvaryumum");
+    if (!name) return;
+
+    const supabase = createClient();
+    const { error } = await supabase.from("saved_aquariums").insert({
+      user_id: user.id,
+      name,
+      liters,
+      mode,
+      selection,
+      selected_plant_ids: Array.from(selectedPlantIds),
+    });
+
+    if (error) {
+      showToast("Kaydedilirken bir sorun oluştu.", "error");
+      return;
+    }
+    showToast("Akvaryumunuz Hesabım'a kaydedildi ✓", "success");
   }
 
   if (loading) {
@@ -374,7 +400,7 @@ export default function AquariumAssistant() {
               <LightingScheduleCard schedule={lightingSchedule} />
             </div>
           )}
-          <div className="mt-6">
+          <div className="mt-6 flex flex-wrap items-center gap-3">
             <ShareResult
               liters={liters}
               selectedFish={[
@@ -391,6 +417,14 @@ export default function AquariumAssistant() {
               stocking={stocking}
               equipment={equipment}
             />
+            {user && (
+              <button
+                onClick={saveAquarium}
+                className="rounded-full border border-gold/40 px-5 py-2.5 font-body text-xs text-gold transition-colors hover:bg-gold/10"
+              >
+                💾 Akvaryumumu Kaydet
+              </button>
+            )}
           </div>
         </div>
       )}

@@ -910,4 +910,29 @@ grant execute on function public.apply_referral(text) to authenticated;
 
 alter table public.reviews add column if not exists photo_url text;
 
+-- ============================================
+-- 25. KAYITLI AKVARYUMLAR (hesaba bağlı, kalıcı)
+-- ============================================
+create table if not exists public.saved_aquariums (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  name text not null default 'Akvaryumum',
+  liters numeric not null,
+  mode text not null default 'karma',
+  selection jsonb not null default '{}',
+  selected_plant_ids jsonb not null default '[]',
+  created_at timestamptz not null default now()
+);
+
+alter table public.saved_aquariums enable row level security;
+
+drop policy if exists "Kullanıcı kendi akvaryumlarını yönetebilir" on public.saved_aquariums;
+create policy "Kullanıcı kendi akvaryumlarını yönetebilir"
+  on public.saved_aquariums for all
+  to authenticated
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+grant select, insert, update, delete on public.saved_aquariums to authenticated;
+
 NOTIFY pgrst, 'reload schema';
