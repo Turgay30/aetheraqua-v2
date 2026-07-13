@@ -35,19 +35,36 @@ export default function LightingScheduleCard({ schedule }: { schedule: LightingS
     }, 900);
   }
 
-  // Gün boyu geçen renk gradyanı için stop noktaları hesapla
+  // Gün boyu geçen renk gradyanını, her fazın gerçek zaman aralığını dikkate
+  // alarak ince örnekleme ile hesapla — iç içe geçen fazlar (örn. Öğle Zirvesi,
+  // Gündüz'ün içinde) ve gece yarısını saran fazlar (Gece) doğru şekilde işlenir.
   const toMinutes = (t: string) => {
     const [h, m] = t.split(":").map(Number);
     return h * 60 + m;
   };
 
+  function isInRange(minutes: number, start: number, end: number): boolean {
+    if (start <= end) return minutes >= start && minutes < end;
+    return minutes >= start || minutes < end; // gece yarısını sarıyor
+  }
+
+  function activePhaseAt(minutes: number) {
+    // Ters sırada kontrol et: sonradan tanımlanan (iç içe/daha spesifik) fazlar önceliklidir
+    for (let i = schedule.phases.length - 1; i >= 0; i--) {
+      const p = schedule.phases[i];
+      const [start, end] = p.time.split("–");
+      if (isInRange(minutes, toMinutes(start), toMinutes(end))) return p;
+    }
+    return schedule.phases[schedule.phases.length - 1];
+  }
+
+  const SAMPLES = 96;
   const gradientStops: string[] = [];
-  schedule.phases.forEach((p) => {
-    const [start] = p.time.split("–");
-    const pct = (toMinutes(start) / (24 * 60)) * 100;
-    gradientStops.push(`${phaseColor(p.label)} ${pct}%`);
-  });
-  gradientStops.push(`${phaseColor(schedule.phases[0].label)} 100%`);
+  for (let i = 0; i <= SAMPLES; i++) {
+    const minutes = (i / SAMPLES) * 24 * 60;
+    const phase = activePhaseAt(minutes % (24 * 60));
+    gradientStops.push(`${phaseColor(phase.label)} ${((i / SAMPLES) * 100).toFixed(2)}%`);
+  }
   const gradientCss = `linear-gradient(90deg, ${gradientStops.join(", ")})`;
 
   return (
@@ -63,10 +80,18 @@ export default function LightingScheduleCard({ schedule }: { schedule: LightingS
         </div>
 
         {/* Gün boyu renk geçişi — gerçek Kelvin tonlarıyla */}
-        <div
-          className="mt-5 h-8 w-full rounded-full shadow-inner"
-          style={{ background: gradientCss }}
-        />
+        <div className="relative mt-5">
+          {/* Dışa taşan parlama efekti */}
+          <div
+            aria-hidden
+            className="absolute inset-x-2 -inset-y-2 rounded-full opacity-70 blur-xl"
+            style={{ background: gradientCss }}
+          />
+          <div
+            className="relative h-8 w-full rounded-full shadow-inner"
+            style={{ background: gradientCss }}
+          />
+        </div>
         <div className="mt-1.5 flex justify-between font-mono text-[9px] text-ink-faint">
           <span>00:00</span>
           <span>06:00</span>
