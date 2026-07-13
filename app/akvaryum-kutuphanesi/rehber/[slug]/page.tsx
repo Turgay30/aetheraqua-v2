@@ -48,8 +48,8 @@ export default async function GuideDetailPage({ params }: { params: { slug: stri
         <h1 className="mt-2 font-display text-4xl text-ink md:text-5xl">{guide.title}</h1>
 
         {guide.cover_image && (
-          <div className="relative mt-8 aspect-[16/9] w-full overflow-hidden rounded-2xl">
-            <Image src={guide.cover_image} alt={guide.title} fill className="object-cover" priority />
+          <div className="relative mt-8 aspect-[16/9] w-full overflow-hidden rounded-2xl bg-abyss-surface">
+            <Image src={guide.cover_image} alt={guide.title} fill className="object-contain" priority />
           </div>
         )}
 

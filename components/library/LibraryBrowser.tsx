@@ -172,12 +172,12 @@ function GuideCard({ item }: { item: GuideRow }) {
       className="group overflow-hidden rounded-2xl border border-abyss-border bg-abyss-surface transition-transform hover:-translate-y-1"
     >
       {item.cover_image && (
-        <div className="relative aspect-[16/9] w-full overflow-hidden">
+        <div className="relative aspect-[16/9] w-full overflow-hidden bg-abyss">
           <Image
             src={item.cover_image}
             alt={item.title}
             fill
-            className="object-cover transition-transform duration-700 group-hover:scale-105"
+            className="object-contain transition-transform duration-700 group-hover:scale-105"
           />
         </div>
       )}
