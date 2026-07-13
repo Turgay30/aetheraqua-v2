@@ -1,4 +1,4 @@
-import { StockingResult } from "@/lib/aquarium-calc";
+import { StockingResult, MinTankViolation } from "@/lib/aquarium-calc";
 
 const levelStyles: Record<StockingResult["level"], { label: string; color: string; bar: string }> = {
   rahat: { label: "Rahat", color: "text-emerald-400", bar: "bg-emerald-400" },
@@ -6,7 +6,13 @@ const levelStyles: Record<StockingResult["level"], { label: string; color: strin
   kalabalık: { label: "Kalabalık", color: "text-red-400", bar: "bg-red-400" },
 };
 
-export default function StockingSummary({ result }: { result: StockingResult }) {
+export default function StockingSummary({
+  result,
+  minTankViolations = [],
+}: {
+  result: StockingResult;
+  minTankViolations?: MinTankViolation[];
+}) {
   const s = levelStyles[result.level];
   const barWidth = Math.min(result.percent, 100);
 
@@ -30,6 +36,21 @@ export default function StockingSummary({ result }: { result: StockingResult }) 
         Toplam yetişkin boy: {result.totalAdultCm.toFixed(1)}cm / Kapasite: ~
         {result.capacityCm.toFixed(0)}cm ({result.percent.toFixed(0)}%)
       </p>
+
+      {minTankViolations.length > 0 && (
+        <div className="mt-4 rounded-xl border border-red-500/30 bg-red-500/5 p-3">
+          <p className="font-body text-xs font-semibold text-red-400">
+            ⚠ Bu tank, seçilen bazı türler için yeterli değil:
+          </p>
+          <ul className="mt-1.5 space-y-0.5">
+            {minTankViolations.map((v) => (
+              <li key={v.name} className="font-body text-xs text-red-300">
+                {v.name} — en az {v.required}L gerektirir
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }

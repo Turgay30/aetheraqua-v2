@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import Skeleton from "@/components/Skeleton";
 import { FishSpecies } from "@/lib/fish-data";
 import { LivestockType, CompatibilityKey, key as ckey } from "@/lib/livestock";
-import { assessStocking, recommendEquipment } from "@/lib/aquarium-calc";
+import { assessStocking, recommendEquipment, checkMinTankViolations } from "@/lib/aquarium-calc";
 import TankSizeInput from "@/components/assistant/TankSizeInput";
 import FishCard, { CardStatus } from "@/components/assistant/FishCard";
 import PlantCard from "@/components/assistant/PlantCard";
@@ -147,6 +147,18 @@ export default function AquariumAssistant() {
 
   const stocking = useMemo(() => assessStocking(totalAdultCm, liters), [totalAdultCm, liters]);
   const equipment = useMemo(() => recommendEquipment(liters, stocking.level), [liters, stocking.level]);
+  const minTankViolations = useMemo(() => {
+    const items = Object.keys(selection).map((k) => {
+      const [type, id] = k.split(":");
+      const list = type === "fish" ? fish : shrimp;
+      const item = list.find((f) => f.id === id);
+      return item ? { name: item.name, minTankLiters: item.minTankLiters } : null;
+    });
+    return checkMinTankViolations(
+      items.filter((i): i is { name: string; minTankLiters: number } => !!i),
+      liters
+    );
+  }, [selection, fish, shrimp, liters]);
   const totalFishCount = useMemo(
     () => Object.values(selection).reduce((sum, c) => sum + c, 0),
     [selection]
@@ -275,6 +287,7 @@ export default function AquariumAssistant() {
                 <FishCard
                   key={f.id}
                   fish={f}
+                  libraryType="fish"
                   status={getStatus("fish", f.id)}
                   count={selection[ckey("fish", f.id)] ?? 0}
                   onToggle={() => toggleCreature("fish", f.id, f.minShoalSize)}
@@ -300,6 +313,7 @@ export default function AquariumAssistant() {
                 <FishCard
                   key={s.id}
                   fish={s}
+                  libraryType="shrimp"
                   status={getStatus("shrimp", s.id)}
                   count={selection[ckey("shrimp", s.id)] ?? 0}
                   onToggle={() => toggleCreature("shrimp", s.id, s.minShoalSize)}
@@ -342,7 +356,7 @@ export default function AquariumAssistant() {
       {hasSelection && (
         <div id="stoklama-detay" className="scroll-mt-24 pb-16">
           <div className="grid gap-6 md:grid-cols-2">
-            <StockingSummary result={stocking} />
+            <StockingSummary result={stocking} minTankViolations={minTankViolations} />
             <EquipmentRecommendation equipment={equipment} />
           </div>
           <div className="mt-6">

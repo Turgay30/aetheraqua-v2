@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import DecorativeGlow from "@/components/DecorativeGlow";
 import LibraryBrowser from "@/components/library/LibraryBrowser";
@@ -31,11 +32,13 @@ export default async function AkvaryumKutuphanesiPage() {
           Akvaryum Asistanı&apos;na dönüp kaldığınız yerden seçime devam edebilirsiniz.
         </p>
 
-        <LibraryBrowser
-          fish={fishRes.data ?? []}
-          shrimp={shrimpRes.data ?? []}
-          plants={plantRes.data ?? []}
-        />
+        <Suspense fallback={null}>
+          <LibraryBrowser
+            fish={fishRes.data ?? []}
+            shrimp={shrimpRes.data ?? []}
+            plants={plantRes.data ?? []}
+          />
+        </Suspense>
       </section>
     </div>
   );

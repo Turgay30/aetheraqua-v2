@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -32,6 +33,16 @@ const CATEGORY_LABELS: Record<Category, string> = {
   kabuklu: "Kabuklular",
 };
 
+const URL_TYPE_TO_CATEGORY: Record<string, Category> = {
+  fish: "balik",
+  plant: "bitki",
+  shrimp: "kabuklu",
+};
+
+function capitalize(s: string) {
+  return s.charAt(0).toLocaleUpperCase("tr-TR") + s.slice(1);
+}
+
 export default function LibraryBrowser({
   fish,
   shrimp,
@@ -41,7 +52,22 @@ export default function LibraryBrowser({
   shrimp: FishRow[];
   plants: PlantRow[];
 }) {
-  const [category, setCategory] = useState<Category>("balik");
+  const searchParams = useSearchParams();
+  const urlType = searchParams.get("type");
+  const urlId = searchParams.get("id");
+  const targetKey = urlType && urlId ? `${urlType}-${urlId}` : null;
+
+  const [category, setCategory] = useState<Category>(
+    (urlType && URL_TYPE_TO_CATEGORY[urlType]) || "balik"
+  );
+  const highlightRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (targetKey && highlightRef.current) {
+      highlightRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [category]);
 
   const counts: Record<Category, number> = {
     balik: fish.length,
@@ -79,30 +105,66 @@ export default function LibraryBrowser({
           (fish.length === 0 ? (
             <EmptyState />
           ) : (
-            fish.map((f) => <FishOrShrimpCard key={f.id} item={f} />)
+            fish.map((f) => (
+              <FishOrShrimpCard
+                key={f.id}
+                item={f}
+                highlighted={targetKey === `fish-${f.id}`}
+                highlightRef={targetKey === `fish-${f.id}` ? highlightRef : undefined}
+              />
+            ))
           ))}
 
         {category === "kabuklu" &&
           (shrimp.length === 0 ? (
             <EmptyState />
           ) : (
-            shrimp.map((s) => <FishOrShrimpCard key={s.id} item={s} />)
+            shrimp.map((s) => (
+              <FishOrShrimpCard
+                key={s.id}
+                item={s}
+                highlighted={targetKey === `shrimp-${s.id}`}
+                highlightRef={targetKey === `shrimp-${s.id}` ? highlightRef : undefined}
+              />
+            ))
           ))}
 
         {category === "bitki" &&
           (plants.length === 0 ? (
             <EmptyState />
           ) : (
-            plants.map((p) => <PlantEntryCard key={p.id} item={p} />)
+            plants.map((p) => (
+              <PlantEntryCard
+                key={p.id}
+                item={p}
+                highlighted={targetKey === `plant-${p.id}`}
+                highlightRef={targetKey === `plant-${p.id}` ? highlightRef : undefined}
+              />
+            ))
           ))}
       </div>
     </div>
   );
 }
 
-function FishOrShrimpCard({ item }: { item: FishRow }) {
+function FishOrShrimpCard({
+  item,
+  highlighted,
+  highlightRef,
+}: {
+  item: FishRow;
+  highlighted?: boolean;
+  highlightRef?: React.RefObject<HTMLDivElement>;
+}) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-abyss-border bg-abyss-surface">
+    <div
+      ref={highlightRef}
+      className={`overflow-hidden rounded-2xl border bg-abyss-surface transition-shadow duration-700 ${
+        highlighted
+          ? "border-gold shadow-[0_0_0_1px_theme(colors.gold.DEFAULT),0_0_24px_rgba(201,162,39,0.5)]"
+          : "border-abyss-border"
+      }`}
+    >
       <div className="relative aspect-[4/3] w-full">
         <Image src={item.image_url} alt={item.name} fill className="object-cover" />
       </div>
@@ -124,9 +186,24 @@ function FishOrShrimpCard({ item }: { item: FishRow }) {
   );
 }
 
-function PlantEntryCard({ item }: { item: PlantRow }) {
+function PlantEntryCard({
+  item,
+  highlighted,
+  highlightRef,
+}: {
+  item: PlantRow;
+  highlighted?: boolean;
+  highlightRef?: React.RefObject<HTMLDivElement>;
+}) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-abyss-border bg-abyss-surface">
+    <div
+      ref={highlightRef}
+      className={`overflow-hidden rounded-2xl border bg-abyss-surface transition-shadow duration-700 ${
+        highlighted
+          ? "border-gold shadow-[0_0_0_1px_theme(colors.gold.DEFAULT),0_0_24px_rgba(201,162,39,0.5)]"
+          : "border-abyss-border"
+      }`}
+    >
       <div className="relative aspect-[4/3] w-full">
         <Image src={item.image_url} alt={item.name} fill className="object-cover" />
       </div>
@@ -135,9 +212,19 @@ function PlantEntryCard({ item }: { item: PlantRow }) {
         {item.note && (
           <p className="mt-3 font-body text-sm leading-relaxed text-ink-muted">{item.note}</p>
         )}
-        <div className="mt-4 flex gap-2 border-t border-abyss-border pt-3">
-          <Spec label="Işık İhtiyacı" value={item.light_level} />
-          <Spec label="CO2" value={item.co2_required ? "Gerekli" : "Gerekmez"} />
+        <div className="mt-4 flex flex-wrap gap-2 border-t border-abyss-border pt-3">
+          <span className="rounded-full bg-aqua/15 px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-wide text-aqua shadow-[0_0_10px_rgba(34,211,184,0.35)]">
+            Işık: {capitalize(item.light_level)}
+          </span>
+          <span
+            className={`rounded-full px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-wide ${
+              item.co2_required
+                ? "bg-gold/15 text-gold shadow-[0_0_10px_rgba(201,162,39,0.35)]"
+                : "bg-abyss text-ink-faint"
+            }`}
+          >
+            CO2: {item.co2_required ? "Gerekli" : "Gerekmez"}
+          </span>
         </div>
       </div>
     </div>

@@ -56,6 +56,23 @@ export function assessStocking(totalAdultCm: number, liters: number): StockingRe
   return { totalAdultCm, capacityCm, percent, level };
 }
 
+export type MinTankViolation = { name: string; required: number };
+
+/**
+ * Her tür için admin'de girilen "min. tank hacmi" bilgisini gerçek tank
+ * hacmiyle karşılaştırır. cm/litre kuralı tek başına yeterli değildir —
+ * örneğin tek bir büyük/territoryal balık cm oranını geçmeyebilir ama yine
+ * de türe özgü çok daha büyük bir minimum tank gerektirebilir.
+ */
+export function checkMinTankViolations(
+  selected: { name: string; minTankLiters: number }[],
+  liters: number
+): MinTankViolation[] {
+  return selected
+    .filter((item) => item.minTankLiters > liters)
+    .map((item) => ({ name: item.name, required: item.minTankLiters }));
+}
+
 export type EquipmentRecommendation = {
   filterFlowLph: number;
   heaterWatt: number;

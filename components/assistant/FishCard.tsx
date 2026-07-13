@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { FishSpecies } from "@/lib/fish-data";
 
 export type CardStatus = "neutral" | "selected" | "compatible" | "incompatible";
@@ -19,6 +20,7 @@ export default function FishCard({
   fish,
   status,
   count,
+  libraryType,
   onToggle,
   onIncrement,
   onDecrement,
@@ -26,6 +28,7 @@ export default function FishCard({
   fish: FishSpecies;
   status: CardStatus;
   count: number;
+  libraryType: "fish" | "shrimp";
   onToggle: () => void;
   onIncrement: () => void;
   onDecrement: () => void;
@@ -62,6 +65,17 @@ export default function FishCard({
           </div>
         </div>
       </button>
+
+      {/* Kütüphane bilgisi — resmin sol üst köşesi */}
+      <Link
+        href={`/akvaryum-kutuphanesi?type=${libraryType}&id=${fish.id}`}
+        onClick={(e) => e.stopPropagation()}
+        aria-label={`${fish.name} hakkında bilgi al`}
+        title="Kütüphanede detaylı bilgi al"
+        className="absolute left-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-abyss/80 text-ink-muted backdrop-blur-sm transition-colors hover:bg-aqua hover:text-abyss"
+      >
+        <BookIcon />
+      </Link>
 
       {/* Adet göstergesi — resmin sağ üst köşesi */}
       {status === "selected" && (
@@ -103,6 +117,21 @@ function XIcon() {
   return (
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function BookIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M4 19.5V5a2 2 0 012-2h11.5v17H6a2 2 0 00-2 2.5"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M17.5 3v17" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
     </svg>
   );
 }
