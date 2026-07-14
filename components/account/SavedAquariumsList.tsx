@@ -34,6 +34,7 @@ export default function SavedAquariumsList({ userId }: { userId: string }) {
 
   useEffect(() => {
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   function handleLoad(aq: SavedAquarium) {

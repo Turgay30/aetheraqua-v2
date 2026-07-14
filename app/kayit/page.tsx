@@ -43,11 +43,11 @@ function KayitForm() {
         .from("profiles")
         .upsert({ id: data.user.id, full_name: name, marketing_consent: marketingConsent });
 
+      // E-posta onayı açıksa bu noktada henüz aktif bir oturum olmayabilir —
+      // bu yüzden referans kodunu hemen işlemek yerine saklıyoruz. Kullanıcı
+      // e-postasını onaylayıp Hesabım'a girdiğinde orada işlenecek.
       if (refCode) {
-        const { data: coupon } = await supabase.rpc("apply_referral", { p_ref_code: refCode });
-        if (coupon) {
-          sessionStorage.setItem("aetheraqua_welcome_coupon", coupon);
-        }
+        localStorage.setItem("aetheraqua_pending_referral", refCode);
       }
     }
 

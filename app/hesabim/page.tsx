@@ -59,6 +59,22 @@ export default function HesabimPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Kayıt sırasında bir davet koduyla gelinmişse ve şimdi gerçek bir oturum
+  // varsa (e-posta onaylanmış), referansı şimdi işle.
+  useEffect(() => {
+    if (!user) return;
+    const pendingRef = localStorage.getItem("aetheraqua_pending_referral");
+    if (!pendingRef) return;
+
+    const supabase = createClient();
+    supabase.rpc("apply_referral", { p_ref_code: pendingRef }).then(({ data: coupon }) => {
+      localStorage.removeItem("aetheraqua_pending_referral");
+      if (coupon) {
+        showToast(`Hoş geldiniz! %10 indirim kuponunuz: ${coupon}`, "success");
+      }
+    });
+  }, [user, showToast]);
+
   useEffect(() => {
     if (!isLoading && !user) {
       router.push("/giris");

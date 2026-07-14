@@ -205,7 +205,7 @@ export default function BlogManager() {
           <div key={post.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-abyss-border bg-abyss-surface p-4">
             <div>
               <p className="font-body text-sm text-ink">{post.title}</p>
-              <p className="font-mono text-[11px] text-ink-faint">/blog/{post.slug}</p>
+              <p className="font-mono text-[11px] text-ink-faint">/akvaryum-kutuphanesi/rehber/{post.slug}</p>
             </div>
             <div className="flex items-center gap-2">
               <button
