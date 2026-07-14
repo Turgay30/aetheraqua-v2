@@ -4,7 +4,6 @@ import FavoriteButton from "@/components/product/FavoriteButton";
 import ProductJsonLd from "@/components/ProductJsonLd";
 import CrossSell from "@/components/product/CrossSell";
 import ReviewsSection from "@/components/product/ReviewsSection";
-import AquariumLightPreview from "@/components/product/AquariumLightPreview";
 import RatingSummary from "@/components/product/RatingSummary";
 import ProductConfigurator from "@/components/product/ProductConfigurator";
 import TechSpecTable from "@/components/product/TechSpecTable";
@@ -137,11 +136,6 @@ export default function ApolloPage() {
             "Apollo serisi, bu döngüyü akvaryumunuza taşımak için tasarlandı: gün doğumunun ilk ışınlarından öğlenin keskin netliğine, alacakaranlığın sıcak tonlarından yıldızlı bir geceye kadar — her an, canlılarınızın doğal ritmine sadık kalır.",
           ]}
         />
-      </section>
-
-      {/* Işık Önizleme */}
-      <section className="mx-auto max-w-2xl px-6 pb-16">
-        <AquariumLightPreview minKelvin={6500} maxKelvin={18000} accent="#D4A343" />
       </section>
 
       {/* Değerlendirmeler */}
