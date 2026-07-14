@@ -9,6 +9,7 @@ type Summary = {
   totalRevenue: number;
   statusCounts: Record<string, number>;
   topSellers: { label: string; quantity: number }[];
+  totalReferrals: number;
 };
 
 export default function SalesSummary() {
@@ -23,6 +24,10 @@ export default function SalesSummary() {
       const { data: items } = await supabase
         .from("order_items")
         .select("product_name, size, quantity");
+
+      const { count: referralCount } = await supabase
+        .from("referrals")
+        .select("*", { count: "exact", head: true });
 
       const totalOrders = orders?.length ?? 0;
       const totalRevenue = orders?.reduce((sum, o) => sum + Number(o.total), 0) ?? 0;
@@ -42,7 +47,7 @@ export default function SalesSummary() {
         .sort((a, b) => b.quantity - a.quantity)
         .slice(0, 5);
 
-      setSummary({ totalOrders, totalRevenue, statusCounts, topSellers });
+      setSummary({ totalOrders, totalRevenue, statusCounts, topSellers, totalReferrals: referralCount ?? 0 });
     }
     load();
   }, []);
@@ -51,11 +56,12 @@ export default function SalesSummary() {
 
   return (
     <div className="mb-10 space-y-6">
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
         <StatCard label="Toplam Sipariş" value={String(summary.totalOrders)} />
         <StatCard label="Toplam Ciro" value={formatTL(summary.totalRevenue)} accent />
         <StatCard label="Beklemede" value={String(summary.statusCounts["beklemede"] ?? 0)} />
         <StatCard label="Teslim Edildi" value={String(summary.statusCounts["teslim_edildi"] ?? 0)} />
+        <StatCard label="🎁 Davetle Kayıt" value={String(summary.totalReferrals)} />
       </div>
 
       {summary.topSellers.length > 0 && (

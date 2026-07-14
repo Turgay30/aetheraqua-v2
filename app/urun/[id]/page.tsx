@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import DynamicProductView, { DynamicProduct } from "@/components/product-template/DynamicProductView";
+import ProductJsonLd from "@/components/ProductJsonLd";
 
 async function getProduct(id: string): Promise<DynamicProduct | null> {
   const supabase = await createClient();
@@ -50,5 +51,28 @@ export default async function DynamicProductPage({ params }: { params: { id: str
   const product = await getProduct(params.id);
   if (!product) notFound();
 
-  return <DynamicProductView product={product} />;
+  const supabase = await createClient();
+  const { data: reviews } = await supabase
+    .from("reviews")
+    .select("rating")
+    .eq("product_id", product.product_id);
+  const ratingStats =
+    reviews && reviews.length > 0
+      ? { average: reviews.reduce((s, r) => s + r.rating, 0) / reviews.length, count: reviews.length }
+      : undefined;
+
+  return (
+    <>
+      <ProductJsonLd
+        name={`AetherAqua ${product.name}`}
+        description={product.description || product.tagline}
+        image={product.images[0] ?? ""}
+        price={product.base_price}
+        sku={product.product_id}
+        rating={ratingStats}
+        url={`https://aetheraqua.com/urun/${product.product_id}`}
+      />
+      <DynamicProductView product={product} />
+    </>
+  );
 }

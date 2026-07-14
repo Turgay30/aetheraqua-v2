@@ -12,6 +12,7 @@ import WhatsAppButton from "@/components/product/WhatsAppButton";
 import DecorativeGlow from "@/components/DecorativeGlow";
 import GhostBackground from "@/components/GhostBackground";
 import ViewItemTracker from "@/components/analytics/ViewItemTracker";
+import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Helios — Ekonomik WRGB Akvaryum Aydınlatması | AetherAqua",
@@ -40,7 +41,14 @@ const SPEC_ROWS = [
   { label: "Boy Seçenekleri", value: "30–120cm (10 seçenek)" },
 ];
 
-export default function HeliosPage() {
+export default async function HeliosPage() {
+  const supabase = await createClient();
+  const { data: reviews } = await supabase.from("reviews").select("rating").eq("product_id", "helios");
+  const ratingStats =
+    reviews && reviews.length > 0
+      ? { average: reviews.reduce((s, r) => s + r.rating, 0) / reviews.length, count: reviews.length }
+      : undefined;
+
   return (
     <div className="relative overflow-hidden bg-abyss bg-abyss-gradient">
       <GhostBackground opacity={0.08} />
@@ -51,6 +59,7 @@ export default function HeliosPage() {
         image="/images/helios-hero.jpg"
         price={4200}
         sku="helios"
+        rating={ratingStats}
       />
       <DecorativeGlow />
       <div className="relative z-10">

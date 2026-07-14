@@ -827,7 +827,11 @@ drop policy if exists "Kullanıcı kendi referanslarını görebilir" on public.
 create policy "Kullanıcı kendi referanslarını görebilir"
   on public.referrals for select
   to authenticated
-  using (auth.uid() = referrer_id or auth.uid() = referred_user_id);
+  using (
+    auth.uid() = referrer_id
+    or auth.uid() = referred_user_id
+    or auth.jwt() ->> 'email' = 'turgayturan705@gmail.com'
+  );
 
 drop policy if exists "Kullanıcı referans oluşturabilir" on public.referrals;
 create policy "Kullanıcı referans oluşturabilir"
