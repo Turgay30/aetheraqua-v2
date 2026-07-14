@@ -121,13 +121,17 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Mobil menü paneli */}
+      {/* Mobil menü paneli — yukarıdan aşağıya kayarak açılır/kapanır */}
       <div
-        className={`overflow-hidden transition-[max-height] duration-300 ease-in-out md:hidden ${
-          menuOpen ? "max-h-64" : "max-h-0"
+        className={`overflow-hidden border-t border-abyss-border transition-all duration-300 ease-in-out md:hidden ${
+          menuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
         }`}
       >
-        <ul className="flex flex-col gap-1 border-t border-abyss-border px-6 py-4">
+        <ul
+          className={`flex flex-col gap-1 px-6 py-4 transition-transform duration-300 ease-in-out ${
+            menuOpen ? "translate-y-0" : "-translate-y-4"
+          }`}
+        >
           {links.map((link) => (
             <li key={link.href}>
               <Link
