@@ -6,6 +6,7 @@ const columns = [
     links: [
       { href: "/apollo", label: "Apollo" },
       { href: "/helios", label: "Helios" },
+      { href: "/apollo-vs-helios", label: "Apollo mu Helios mu?" },
       { href: "/akvaryum-asistani", label: "Akvaryum Asistanı" },
     ],
   },
@@ -14,6 +15,7 @@ const columns = [
     links: [
       { href: "/hakkimizda", label: "Hakkımızda" },
       { href: "/akvaryum-kutuphanesi", label: "Akvaryum Kütüphanesi" },
+      { href: "/toptan-satis", label: "Toptan Satış" },
       { href: "/iletisim", label: "İletişim" },
       { href: "/sepet", label: "Sepet" },
     ],

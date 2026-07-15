@@ -915,6 +915,40 @@ grant execute on function public.apply_referral(text) to authenticated;
 alter table public.reviews add column if not exists photo_url text;
 
 -- ============================================
+-- 26. TOPTAN SATIŞ (B2B) TALEPLERİ
+-- ============================================
+create table if not exists public.wholesale_inquiries (
+  id uuid primary key default gen_random_uuid(),
+  business_name text not null,
+  contact_name text not null,
+  phone text not null,
+  email text not null,
+  city text,
+  estimated_quantity text,
+  message text,
+  status text not null default 'yeni' check (status in ('yeni','görüşülüyor','tamamlandı','iptal')),
+  created_at timestamptz not null default now()
+);
+
+alter table public.wholesale_inquiries enable row level security;
+
+drop policy if exists "Herkes toptan talebi oluşturabilir" on public.wholesale_inquiries;
+create policy "Herkes toptan talebi oluşturabilir"
+  on public.wholesale_inquiries for insert
+  to anon, authenticated
+  with check (true);
+
+drop policy if exists "Admin toptan taleplerini yönetebilir" on public.wholesale_inquiries;
+create policy "Admin toptan taleplerini yönetebilir"
+  on public.wholesale_inquiries for all
+  to authenticated
+  using (auth.jwt() ->> 'email' = 'turgayturan705@gmail.com')
+  with check (auth.jwt() ->> 'email' = 'turgayturan705@gmail.com');
+
+grant insert on public.wholesale_inquiries to anon, authenticated;
+grant select, update, delete on public.wholesale_inquiries to authenticated;
+
+-- ============================================
 -- 25. KAYITLI AKVARYUMLAR (hesaba bağlı, kalıcı)
 -- ============================================
 create table if not exists public.saved_aquariums (
