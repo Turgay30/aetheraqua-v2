@@ -18,6 +18,7 @@ import Skeleton from "@/components/Skeleton";
 import AvatarUpload from "@/components/account/AvatarUpload";
 import ReferralCard from "@/components/account/ReferralCard";
 import SavedAquariumsList from "@/components/account/SavedAquariumsList";
+import LoyaltyPointsCard from "@/components/account/LoyaltyPointsCard";
 import { useToast } from "@/components/ToastProvider";
 import Image from "next/image";
 import { buildTrackingUrl } from "@/lib/shipping";
@@ -130,6 +131,13 @@ export default function HesabimPage() {
             Şifre Değiştir
           </h2>
           <PasswordChangeForm email={user.email!} />
+        </div>
+
+        <div className="mt-12">
+          <h2 className="mb-4 font-mono text-[11px] uppercase tracking-[0.25em] text-ink-faint">
+            Sadakat Puanı
+          </h2>
+          <LoyaltyPointsCard userId={user.id} />
         </div>
 
         <h2 className="mt-10 font-mono text-[11px] uppercase tracking-[0.25em] text-ink-faint">

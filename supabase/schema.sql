@@ -984,6 +984,65 @@ grant insert on public.gift_cards to anon, authenticated;
 grant select, update, delete on public.gift_cards to authenticated;
 
 -- ============================================
+-- 28. SADAKAT PUANI SİSTEMİ
+-- ============================================
+alter table public.profiles add column if not exists loyalty_points integer not null default 0;
+
+-- Sipariş verildiğinde otomatik puan kazandır (her 100 TL harcamaya 1 puan)
+create or replace function public.award_loyalty_points() returns trigger as $$
+begin
+  if new.user_id is not null then
+    update public.profiles
+    set loyalty_points = loyalty_points + floor(new.total / 100)::int
+    where id = new.user_id;
+  end if;
+  return new;
+end;
+$$ language plpgsql security definer;
+
+drop trigger if exists trg_award_loyalty_points on public.orders;
+create trigger trg_award_loyalty_points
+  after insert on public.orders
+  for each row execute function public.award_loyalty_points();
+
+-- Puanları kupona çevir (her 100 puan = 50 TL sabit indirim)
+create or replace function public.redeem_loyalty_points(p_points int)
+returns text as $$
+declare
+  v_user_id uuid := auth.uid();
+  v_current_points int;
+  v_coupon_code text;
+  v_discount numeric;
+begin
+  if v_user_id is null then
+    raise exception 'Giriş yapılmamış';
+  end if;
+
+  if p_points < 100 or p_points % 100 != 0 then
+    raise exception 'Puan 100''ün katları olmalı ve en az 100 olmalı';
+  end if;
+
+  select loyalty_points into v_current_points from public.profiles where id = v_user_id;
+
+  if v_current_points is null or v_current_points < p_points then
+    raise exception 'Yetersiz puan';
+  end if;
+
+  v_discount := (p_points / 100) * 50;
+  v_coupon_code := 'PUAN-' || upper(substring(md5(random()::text) from 1 for 6));
+
+  insert into public.coupons (code, type, value, is_active, usage_limit)
+  values (v_coupon_code, 'fixed', v_discount, true, 1);
+
+  update public.profiles set loyalty_points = loyalty_points - p_points where id = v_user_id;
+
+  return v_coupon_code;
+end;
+$$ language plpgsql security definer;
+
+grant execute on function public.redeem_loyalty_points(int) to authenticated;
+
+-- ============================================
 -- 25. KAYITLI AKVARYUMLAR (hesaba bağlı, kalıcı)
 -- ============================================
 create table if not exists public.saved_aquariums (

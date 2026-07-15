@@ -194,21 +194,17 @@ export default function ProductConfigurator({
         )}
 
         {!stockLoading && stockQty !== null && (
-          <p
-            className={`mt-3 font-body text-xs font-semibold ${
-              stockQty === 0
-                ? "text-red-400"
-                : stockQty <= 5
-                  ? "text-gold"
-                  : "text-emerald-400"
-            }`}
-          >
-            {stockQty === 0
-              ? "Tükendi"
-              : stockQty <= 5
-                ? `Son ${stockQty} adet`
-                : "Stokta"}
-          </p>
+          <div className="mt-3">
+            {stockQty === 0 ? (
+              <p className="font-body text-xs font-semibold text-red-400">Tükendi</p>
+            ) : stockQty <= 5 ? (
+              <span className="inline-flex animate-pulse items-center gap-1.5 rounded-full border border-gold/40 bg-gold/10 px-3 py-1.5 font-body text-xs font-bold text-gold shadow-[0_0_12px_rgba(201,162,39,0.35)]">
+                🔥 Son {stockQty} adet kaldı!
+              </span>
+            ) : (
+              <p className="font-body text-xs font-semibold text-emerald-400">Stokta</p>
+            )}
+          </div>
         )}
 
         <button

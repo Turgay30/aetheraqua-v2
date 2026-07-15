@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import { CartProvider } from "@/components/cart/CartProvider";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import ToastProvider from "@/components/ToastProvider";
+import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import AnalyticsScripts from "@/components/analytics/AnalyticsScripts";
 import OrganizationJsonLd from "@/components/OrganizationJsonLd";
 
@@ -32,6 +33,18 @@ export const metadata: Metadata = {
   verification: {
     google: "Uuj1_kaGYsYhlTj0akTJk0bgHclUrlvd2kuLxrLf_t4",
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "AetherAqua",
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
+};
+
+export const viewport = {
+  themeColor: "#0B1220",
 };
 
 export default function RootLayout({
@@ -44,6 +57,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-abyss font-body text-ink antialiased">
         <OrganizationJsonLd />
         <AnalyticsScripts />
+        <ServiceWorkerRegister />
         <ToastProvider>
           <AuthProvider>
             <CartProvider>
