@@ -254,6 +254,24 @@ export default function HesabimPage() {
 
         <div className="mt-12">
           <h2 className="mb-4 font-mono text-[11px] uppercase tracking-[0.25em] text-ink-faint">
+            Hediye Gönder
+          </h2>
+          <Link
+            href="/hediye-karti"
+            className="flex items-center justify-between rounded-2xl border border-gold/30 bg-gold/[0.04] p-5 transition-colors hover:bg-gold/[0.08]"
+          >
+            <div>
+              <p className="font-body text-sm text-ink">🎁 Bir sevdiğinize AetherAqua hediye kartı gönderin</p>
+              <p className="mt-1 font-body text-xs text-ink-muted">
+                İstediğiniz tutarda, e-posta ile anında teslim
+              </p>
+            </div>
+            <span className="font-body text-sm text-gold">→</span>
+          </Link>
+        </div>
+
+        <div className="mt-12">
+          <h2 className="mb-4 font-mono text-[11px] uppercase tracking-[0.25em] text-ink-faint">
             Gizlilik Tercihleri
           </h2>
           <MarketingConsentToggle userId={user.id} />

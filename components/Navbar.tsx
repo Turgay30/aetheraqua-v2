@@ -11,6 +11,7 @@ const links = [
   { href: "/helios", label: "Helios" },
   { href: "/akvaryum-asistani", label: "Akvaryum Asistanı" },
   { href: "/akvaryum-kutuphanesi", label: "Kütüphane" },
+  { href: "/musteri-galerisi", label: "Galeri" },
 ];
 
 export default function Navbar() {

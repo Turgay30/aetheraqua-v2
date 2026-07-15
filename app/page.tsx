@@ -8,6 +8,7 @@ import GhostBackground from "@/components/GhostBackground";
 import MoreProducts from "@/components/MoreProducts";
 import SocialProofBadge from "@/components/SocialProofBadge";
 import RecentlyViewed from "@/components/RecentlyViewed";
+import CustomerGalleryPreview from "@/components/CustomerGalleryPreview";
 
 export default function Home() {
   return (
@@ -87,6 +88,8 @@ export default function Home() {
       </section>
 
       <MoreProducts />
+
+      <CustomerGalleryPreview />
 
       <RecentlyViewed />
 
