@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     images: ["/images/ruins-bg.jpg"],
   },
   verification: {
-    google: "Uuj1_kaGYsYhlTj0akTJk0bgHclUrlvd2kuLxrL",
+    google: "Uuj1_kaGYsYhlTj0akTJk0bgHclUrlvd2kuLxrLf_t4",
   },
 };
 
