@@ -11,6 +11,7 @@ import FishManager from "@/components/admin/FishManager";
 import CouponManager from "@/components/admin/CouponManager";
 import BlogManager from "@/components/admin/BlogManager";
 import WholesaleManager from "@/components/admin/WholesaleManager";
+import GiftCardManager from "@/components/admin/GiftCardManager";
 import SalesSummary from "@/components/admin/SalesSummary";
 import PlantManager from "@/components/admin/PlantManager";
 import ShrimpManager from "@/components/admin/ShrimpManager";
@@ -54,7 +55,7 @@ export default function AdminPage() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
   const [orders, setOrders] = useState<Order[] | null>(null);
-  const [tab, setTab] = useState<"orders" | "products" | "fish" | "shrimp" | "plants" | "coupons" | "rehberler" | "toptan">("orders");
+  const [tab, setTab] = useState<"orders" | "products" | "fish" | "shrimp" | "plants" | "coupons" | "rehberler" | "toptan" | "hediye">("orders");
 
   useEffect(() => {
     if (isLoading) return;
@@ -170,6 +171,14 @@ export default function AdminPage() {
         >
           Toptan
         </button>
+        <button
+          onClick={() => setTab("hediye")}
+          className={`rounded-full px-5 py-2 font-body text-sm transition-colors ${
+            tab === "hediye" ? "bg-gold text-abyss" : "border border-abyss-border text-ink-muted"
+          }`}
+        >
+          Hediye Kartları
+        </button>
       </div>
 
       {tab === "orders" ? (
@@ -255,9 +264,13 @@ export default function AdminPage() {
         <div className="mt-8">
           <BlogManager />
         </div>
-      ) : (
+      ) : tab === "toptan" ? (
         <div className="mt-8">
           <WholesaleManager />
+        </div>
+      ) : (
+        <div className="mt-8">
+          <GiftCardManager />
         </div>
       )}
     </div>

@@ -949,6 +949,41 @@ grant insert on public.wholesale_inquiries to anon, authenticated;
 grant select, update, delete on public.wholesale_inquiries to authenticated;
 
 -- ============================================
+-- 27. HEDİYE KARTLARI
+-- ============================================
+create table if not exists public.gift_cards (
+  id uuid primary key default gen_random_uuid(),
+  code text not null unique,
+  amount numeric not null,
+  purchaser_name text not null,
+  purchaser_email text not null,
+  purchaser_phone text,
+  recipient_name text not null,
+  recipient_email text not null,
+  message text,
+  status text not null default 'bekliyor' check (status in ('bekliyor','onaylandı','kullanıldı')),
+  created_at timestamptz not null default now()
+);
+
+alter table public.gift_cards enable row level security;
+
+drop policy if exists "Herkes hediye kartı talebi oluşturabilir" on public.gift_cards;
+create policy "Herkes hediye kartı talebi oluşturabilir"
+  on public.gift_cards for insert
+  to anon, authenticated
+  with check (true);
+
+drop policy if exists "Admin hediye kartlarını yönetebilir" on public.gift_cards;
+create policy "Admin hediye kartlarını yönetebilir"
+  on public.gift_cards for all
+  to authenticated
+  using (auth.jwt() ->> 'email' = 'turgayturan705@gmail.com')
+  with check (auth.jwt() ->> 'email' = 'turgayturan705@gmail.com');
+
+grant insert on public.gift_cards to anon, authenticated;
+grant select, update, delete on public.gift_cards to authenticated;
+
+-- ============================================
 -- 25. KAYITLI AKVARYUMLAR (hesaba bağlı, kalıcı)
 -- ============================================
 create table if not exists public.saved_aquariums (

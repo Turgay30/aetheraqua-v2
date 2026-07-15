@@ -8,6 +8,7 @@ const columns = [
       { href: "/helios", label: "Helios" },
       { href: "/apollo-vs-helios", label: "Apollo mu Helios mu?" },
       { href: "/akvaryum-asistani", label: "Akvaryum Asistanı" },
+      { href: "/hediye-karti", label: "Hediye Kartı" },
     ],
   },
   {
@@ -15,7 +16,9 @@ const columns = [
     links: [
       { href: "/hakkimizda", label: "Hakkımızda" },
       { href: "/akvaryum-kutuphanesi", label: "Akvaryum Kütüphanesi" },
+      { href: "/musteri-galerisi", label: "Müşteri Galerisi" },
       { href: "/toptan-satis", label: "Toptan Satış" },
+      { href: "/sss", label: "Sıkça Sorulan Sorular" },
       { href: "/iletisim", label: "İletişim" },
       { href: "/sepet", label: "Sepet" },
     ],
